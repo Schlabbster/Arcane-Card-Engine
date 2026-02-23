@@ -1,0 +1,2103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Encounter Tarot Engine (Hybrid)</title>
+  <style>
+    :root{
+      --bg0:#070813;
+      --bg1:#0b0f22;
+      --panel:#0f1630cc;
+      --panel2:#0f1630f2;
+      --stroke:#2a3564;
+      --stroke2:#3b4aa0;
+      --text:#e9ecff;
+      --muted:#aab2e5;
+      --accent:#7cf6ff;
+      --accent2:#b38cff;
+      --good:#65ffb2;
+      --warn:#ffd37c;
+      --bad:#ff6b9a;
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:
+        radial-gradient(1200px 800px at 20% 10%, rgba(179,140,255,.22), transparent 60%),
+        radial-gradient(900px 600px at 80% 30%, rgba(124,246,255,.18), transparent 55%),
+        radial-gradient(700px 500px at 50% 90%, rgba(101,255,178,.08), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow:hidden;
+    }
+
+    .app{
+      height:100%;
+      display:grid;
+      grid-template-columns: 320px minmax(360px,1fr) 420px;
+      gap:14px;
+      padding:14px;
+    }
+    @media (max-width: 1180px){
+      body{overflow:auto}
+      .app{
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        overflow:visible;
+      }
+    }
+
+    .panel{
+      background: linear-gradient(180deg, rgba(15,22,48,.86), rgba(15,22,48,.68));
+      border:1px solid rgba(59,74,160,.35);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow:hidden;
+      position:relative;
+      min-height: 120px;
+
+      /* NEW: make headers stay put while panels scroll internally */
+      display:flex;
+      flex-direction:column;
+    }
+    .panel header{
+      padding:14px 14px 10px;
+      border-bottom:1px solid rgba(59,74,160,.26);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .panel header h2{
+      margin:0;
+      font-size:13px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color:rgba(233,236,255,.9);
+    }
+    .panel header .sub{
+      font-size:12px;
+      color:var(--muted);
+      opacity:.9;
+      white-space:nowrap;
+    }
+    .panel .content{
+      padding:14px;
+      flex:1;
+      overflow:auto;
+      overscroll-behavior: contain;
+    }
+
+    .row{display:flex; gap:10px; align-items:center; margin-bottom:12px}
+    .row label{flex: 0 0 110px; color:var(--muted); font-size:12px}
+    .row select,.row input[type="range"], .row input[type="text"]{
+      flex:1;
+      background: rgba(7,8,19,.55);
+      border:1px solid rgba(59,74,160,.35);
+      color:var(--text);
+      border-radius: 12px;
+      padding:10px 10px;
+      outline:none;
+    }
+    .row input[type="range"]{padding:10px 0}
+    .row small{color:var(--muted); font-size:12px}
+
+    .seg{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:8px;
+      margin-bottom:12px;
+    }
+    .seg button{
+      border-radius: 14px;
+      padding:10px 12px;
+      border:1px solid rgba(59,74,160,.35);
+      background: rgba(7,8,19,.45);
+      color: var(--text);
+      cursor:pointer;
+      transition:.12s transform, .15s background, .15s border;
+      font-weight:600;
+      font-size:12px;
+    }
+    .seg button:hover{transform: translateY(-1px); border-color: rgba(124,246,255,.45)}
+    .seg button.active{
+      background: linear-gradient(90deg, rgba(124,246,255,.18), rgba(179,140,255,.14));
+      border-color: rgba(124,246,255,.55);
+    }
+
+    .btnRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .btn{
+      border-radius: 14px;
+      padding:10px 12px;
+      border:1px solid rgba(59,74,160,.35);
+      background: rgba(7,8,19,.45);
+      color: var(--text);
+      cursor:pointer;
+      transition:.12s transform, .15s background, .15s border, .12s opacity;
+      font-weight:700;
+      font-size:12px;
+      user-select:none;
+    }
+    .btn:hover{transform: translateY(-1px); border-color: rgba(124,246,255,.45)}
+    .btn.primary{
+      background: linear-gradient(90deg, rgba(124,246,255,.20), rgba(179,140,255,.18));
+      border-color: rgba(124,246,255,.55);
+    }
+    .btn.danger{
+      border-color: rgba(255,107,154,.45);
+      background: rgba(255,107,154,.08);
+    }
+    .btn:disabled{opacity:.45; cursor:not-allowed; transform:none}
+
+    /* Center / Cards */
+    .stage{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .cardWrap{
+      flex:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:14px;
+      position:relative;
+    }
+    .hint{
+      position:absolute;
+      top:14px;
+      left:14px;
+      right:14px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      color:rgba(170,178,229,.9);
+      font-size:12px;
+      pointer-events:none;
+    }
+    .hint .pill{
+      padding:8px 10px;
+      border-radius: 999px;
+      background: rgba(7,8,19,.45);
+      border:1px solid rgba(59,74,160,.28);
+      backdrop-filter: blur(8px);
+      max-width: 48%;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* NEW: grid for multiple cards */
+    .cardsGrid{
+      width: min(920px, 100%);
+      display:grid;
+      gap:14px;
+      align-items:center;
+      justify-items:center;
+      grid-template-columns: repeat(2, minmax(220px, 1fr));
+    }
+    .cardsGrid.spread{
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
+    }
+    @media (max-width: 900px){
+      .cardsGrid{grid-template-columns: 1fr}
+      .cardsGrid.spread{grid-template-columns: 1fr}
+    }
+
+    .cardSlot{
+      width: 100%;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:center;
+    }
+    .slotLabel{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:center;
+      align-items:center;
+      font-size:11px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color: rgba(233,236,255,.86);
+    }
+    .slotLabel .pillTag{
+      padding:7px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(59,74,160,.35);
+      background: rgba(7,8,19,.35);
+    }
+
+    .card3d{
+      width:min(300px, 100%);
+      aspect-ratio: 2.2/3.2;
+      perspective: 1100px;
+      cursor:pointer;
+      user-select:none;
+      position:relative;
+      filter: drop-shadow(0 25px 40px rgba(0,0,0,.55));
+    }
+    .cardsGrid.spread .card3d{
+      width:min(220px, 100%);
+    }
+
+    .card3d .inner{
+    position:absolute; inset:0;
+    transform-style:preserve-3d;
+    transition: transform 650ms cubic-bezier(.2,.9,.2,1);
+    border-radius: 22px;
+    will-change: transform;
+    }
+    .card3d.flipped .inner{
+      transform: rotateY(180deg);
+    }
+    .face{
+    position:absolute; inset:0;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+    transform-style: preserve-3d;
+    border-radius: 22px;
+      overflow:hidden;
+      border:1px solid rgba(124,246,255,.26);
+      background:
+        radial-gradient(120px 120px at 20% 20%, rgba(124,246,255,.20), transparent 60%),
+        radial-gradient(180px 180px at 80% 30%, rgba(179,140,255,.18), transparent 60%),
+        linear-gradient(180deg, rgba(15,22,48,.92), rgba(7,8,19,.75));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+    }
+    .back{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+    }
+    .back:before{
+      content:"";
+      position:absolute; inset:14px;
+      border-radius: 18px;
+      border:1px dashed rgba(124,246,255,.28);
+      opacity:.9;
+    }
+    .sigil{
+      width:66%;
+      aspect-ratio:1/1;
+      border-radius: 999px;
+      border:1px solid rgba(124,246,255,.22);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(124,246,255,.08), transparent 58%),
+        conic-gradient(from 180deg, rgba(124,246,255,.0), rgba(179,140,255,.22), rgba(124,246,255,.0));
+      position:relative;
+      animation: pulse 2.8s ease-in-out infinite;
+    }
+    .sigil:before, .sigil:after{
+      content:"";
+      position:absolute; inset:18%;
+      border-radius: 999px;
+      border:1px solid rgba(179,140,255,.25);
+      box-shadow: 0 0 18px rgba(124,246,255,.10);
+    }
+    .sigil:after{
+      inset:32%;
+      border-color: rgba(124,246,255,.22);
+      filter: blur(.1px);
+    }
+    @keyframes pulse{
+      0%,100%{transform: scale(1); opacity:.95}
+      50%{transform: scale(1.03); opacity:1}
+    }
+
+    /* Rotate ONLY the face */
+    .face.front{
+      transform: rotateY(180deg);
+    }
+    
+    /* Content wrapper (NO rotation) */
+    .frontContent{
+      height:100%;
+      padding:18px 18px 16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      position:relative;
+    }
+    .frontContent:after{
+      content:"";
+      position:absolute;
+      left:18px; right:18px; top:54px;
+      height:1px;
+      background: linear-gradient(90deg, transparent, rgba(124,246,255,.22), transparent);
+      opacity:.55;
+      pointer-events:none;
+    }
+
+    /* FIX: tag area is now safe + wrap-friendly */
+    .cardTop{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+    .tag{
+      font-size:10px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color: rgba(233,236,255,.88);
+      padding:6px 9px;
+      border-radius: 999px;
+      border:1px solid rgba(59,74,160,.35);
+      background: rgba(7,8,19,.35);
+      white-space:nowrap;
+      max-width: 100%;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .tag.tight{
+      max-width: 62%;
+    }
+
+    .cardTitle{
+      font-weight:900;
+      font-size:20px;
+      line-height:1.1;
+      margin:0;
+      letter-spacing:.02em;
+      word-break: break-word;
+    }
+    .cardSub{
+      color: var(--muted);
+      font-size:12px;
+      line-height:1.4;
+      margin:0;
+    }
+    .cardHook{
+      margin:0;
+      font-size:12px;
+      line-height:1.45;
+      color: rgba(233,236,255,.88);
+    }
+    .cardSub:empty, .cardHook:empty{display:none}
+    .divider{
+      height:1px;
+      background: linear-gradient(90deg, transparent, rgba(124,246,255,.35), transparent);
+      margin:2px 0;
+      opacity:.8;
+    }
+    .cardMeta{
+      margin-top:12px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      font-size:12px;
+      color: var(--muted);
+    }
+    .metaBox{
+      border:1px solid rgba(59,74,160,.28);
+      background: rgba(7,8,19,.30);
+      border-radius: 16px;
+      padding:10px 10px;
+    }
+    .metaBox b{color: var(--text); font-weight:800}
+    .cardFooter{
+      margin-top:12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding-top:10px;
+      color: rgba(170,178,229,.9);
+      font-size:11px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .cardFooter .dot{
+      width:6px;height:6px;border-radius:999px;
+      background: rgba(124,246,255,.55);
+      box-shadow: 0 0 14px rgba(124,246,255,.35);
+      flex:0 0 auto;
+    }
+
+    /* Right panel output */
+    .out{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+
+      /* NEW: let the panel decide height; this scrolls naturally on desktop too */
+      flex:1;
+      overflow:auto;
+      padding-right:6px;
+    }
+    @media (max-width:1180px){
+      .out{max-height:none}
+    }
+    .block{
+      border:1px solid rgba(59,74,160,.28);
+      background: rgba(7,8,19,.30);
+      border-radius: 16px;
+      padding:12px 12px;
+    }
+    .block h3{
+      margin:0 0 8px;
+      font-size:12px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color: rgba(233,236,255,.90);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .kv{
+      display:grid;
+      grid-template-columns: 128px 1fr;
+      gap:8px 10px;
+      font-size:13px;
+      line-height:1.35;
+    }
+    .kv .k{
+      color: var(--muted);
+      font-size:12px;
+    }
+    .kv .v{color: var(--text)}
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px;
+      color: rgba(170,178,229,0.95);
+      white-space: pre-wrap;
+    }
+    .miniBtns{display:flex; gap:8px; flex-wrap:wrap}
+    .miniBtn{
+      padding:7px 10px;
+      border-radius: 12px;
+      border:1px solid rgba(59,74,160,.35);
+      background: rgba(7,8,19,.35);
+      color: var(--text);
+      cursor:pointer;
+      font-weight:700;
+      font-size:12px;
+    }
+    .miniBtn:hover{border-color: rgba(124,246,255,.45)}
+
+    .toast{
+      position:fixed;
+      bottom:14px;
+      left:50%;
+      transform: translateX(-50%);
+      background: rgba(7,8,19,.72);
+      border:1px solid rgba(124,246,255,.35);
+      padding:10px 12px;
+      border-radius: 999px;
+      color: var(--text);
+      font-weight:800;
+      font-size:12px;
+      box-shadow: var(--shadow);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .18s ease, transform .18s ease;
+      z-index:99;
+    }
+    .toast.show{
+      opacity:1;
+      transform: translateX(-50%) translateY(-4px);
+    }
+
+    /* subtle particles */
+    .spark{
+      position:absolute;
+      width:4px;height:4px;
+      border-radius:999px;
+      background: rgba(124,246,255,.55);
+      box-shadow: 0 0 18px rgba(124,246,255,.35);
+      opacity:.0;
+      animation: floatUp 1.0s ease-out forwards;
+      pointer-events:none;
+    }
+    @keyframes floatUp{
+      0%{transform: translateY(0) scale(1); opacity:.0}
+      15%{opacity:.9}
+      100%{transform: translateY(-46px) scale(.35); opacity:0}
+    }
+
+    /* Session log */
+    .logItem{
+      border:1px solid rgba(59,74,160,.26);
+      background: rgba(7,8,19,.22);
+      border-radius: 14px;
+      padding:10px;
+      margin-top:10px;
+    }
+    .logItem .t{font-weight:900; font-size:13px}
+    .logItem .m{color:var(--muted); font-size:12px; margin-top:6px}
+    .logItem .a{color:rgba(124,246,255,.9); font-size:12px; margin-top:6px}
+  
+    /* Scrollbars (WebKit + Firefox) */
+    .panel .content{ scrollbar-width: thin; scrollbar-color: rgba(124,246,255,.35) rgba(7,8,19,.25); }
+    .panel .content::-webkit-scrollbar{ width:10px; height:10px; }
+    .panel .content::-webkit-scrollbar-track{ background: rgba(7,8,19,.18); border-radius: 999px; }
+    .panel .content::-webkit-scrollbar-thumb{
+      background: linear-gradient(180deg, rgba(124,246,255,.22), rgba(179,140,255,.18));
+      border:1px solid rgba(59,74,160,.35);
+      border-radius: 999px;
+    }
+
+    
+    /* Avoid nested scroll areas created by inner .content blocks */
+    .panel .content .content{ overflow: visible; flex: unset; }
+
+    /* Better focus visibility */
+    button:focus-visible, select:focus-visible, input:focus-visible{
+      outline: 2px solid rgba(124,246,255,.55);
+      outline-offset: 2px;
+    }
+
+    /* Make long labels / pills never overflow */
+    .sub{max-width: 100%; overflow:hidden; text-overflow:ellipsis;}
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- LEFT -->
+    <section class="panel" id="leftPanel">
+      <header>
+        <h2>Deck Controls</h2>
+        <div class="sub" id="statusLine">Ready</div>
+      </header>
+      <div class="content">
+        <div class="row">
+          <label for="deckTheme">Deck Theme</label>
+          <select id="deckTheme">
+            <option value="fantasy" selected>Fantasy (default)</option>
+            <option value="mythic">Mythic &amp; Epic</option>
+            <option value="swashbuckling">Swashbuckling</option>
+            <option value="political">Political Intrigue</option>
+            <option value="noir">Noir Mystery</option>
+            <option value="horror">Horror</option>
+            <option value="grimdark">Grimdark</option>
+            <option value="desert">Desert &amp; Wastes</option>
+            <option value="planar">Planar / Weird</option>
+            <option value="steampunk">Steampunk</option>
+            <option value="cyberpunk">Cyberpunk</option>
+            <option value="scifi">Sci‑Fi</option>
+</select>
+        
+</div>
+
+        <div class="row">
+          <label for="majorDeck">Major Deck</label>
+          <select id="majorDeck">
+            <option value="hybrid" selected>Hybrid (Encounter Majors)</option>
+            <option value="classic">Classic Tarot (22)</option>
+            <option value="mixed">Mixed</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <label for="minorDeck">Minor Deck</label>
+          <select id="minorDeck">
+            <option value="drivers" selected>Drivers (Events)</option>
+            <option value="suits">Tarot Suits (56)</option>
+            <option value="mixed">Mixed</option>
+          </select>
+        </div>
+
+        <div class="row" style="margin-top:-4px">
+          <label for="useReversals">Reversals</label>
+          <div style="flex:1;display:flex;align-items:center;gap:10px">
+            <input id="useReversals" type="checkbox" />
+            <small style="margin:0">50% chance for a card to be reversed (adds a darker or sideways meaning).</small>
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="partyTier">Party Tier</label>
+          <select id="partyTier">
+            <option value="low">Low (Lv 1–4)</option>
+            <option value="mid" selected>Mid (Lv 5–10)</option>
+            <option value="high">High (Lv 11+)</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <label for="tone">Tone</label>
+          <input id="tone" type="range" min="0" max="100" value="55" />
+        </div>
+        <div class="row" style="margin-top:-6px">
+          <label></label>
+          <small><span id="toneLabel">Balanced</span> · <span id="toneHint">heroic stakes, grounded consequences</span></small>
+        </div>
+
+        <div class="row">
+          <label for="regionTag">Region Tag</label>
+          <input id="regionTag" type="text" placeholder="e.g., Frostmarch Border, The Golden Coast (optional)" />
+        </div>
+
+        <div class="row" style="margin-bottom:8px">
+          <label>Draw Mode</label>
+          <div style="flex:1"></div>
+        </div>
+        <div class="seg">
+          <button class="active" data-mode="quick" id="modeQuick">Quick Draw</button>
+          <button data-mode="manual" id="modeManual">Manual</button>
+          <button data-mode="spread" id="modeSpread">3-Card Spread</button>
+        </div>
+
+        <div class="btnRow">
+          <button class="btn primary" id="btnDraw">Draw</button>
+          <button class="btn" id="btnRedrawMinor" disabled>Redraw Minor</button>
+          <button class="btn" id="btnEscalate" disabled>Escalate</button>
+          <button class="btn" id="btnSave" disabled>Save</button>
+          <button class="btn danger" id="btnClearLog">Clear Log</button>
+        </div>
+
+        <div class="content" style="padding:0;margin-top:10px">
+          <div class="block">
+            <h3>Session Log <span class="miniBtns">
+              <button class="miniBtn" id="btnCopyLog">Copy Log</button>
+            </span></h3>
+            <div id="logArea" class="mono">No saved encounters yet.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CENTER -->
+    <section class="panel stage" id="centerPanel">
+      <header>
+        <h2>Encounter Tarot</h2>
+        <div class="sub">Draw shows Major + Minor (Spread shows 3 Majors + Minor)</div>
+      </header>
+
+      <div class="cardWrap" id="cardWrap">
+        <div class="hint">
+          <div class="pill" id="pillMode">Mode: Quick Draw</div>
+          <div class="pill" id="pillPick">No draw yet</div>
+        </div>
+
+        <!-- NEW: Multi-card grid -->
+        <div class="cardsGrid" id="cardsGrid">
+          <!-- Major Slot -->
+          <div class="cardSlot" id="slotMajor">
+            <div class="slotLabel">
+              <span class="pillTag">MAJOR</span>
+              <span class="pillTag" id="slotMajorName">—</span>
+            </div>
+            <div class="card3d" id="cardMajor" title="Click to draw">
+              <div class="inner" id="innerMajor">
+                <div class="face back"><div class="sigil"></div></div>
+                <div class="face front" id="frontMajor"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Minor Slot -->
+          <div class="cardSlot" id="slotMinor">
+            <div class="slotLabel">
+              <span class="pillTag">MINOR</span>
+              <span class="pillTag" id="slotMinorName">—</span>
+            </div>
+            <div class="card3d" id="cardMinor" title="Click to draw">
+              <div class="inner" id="innerMinor">
+                <div class="face back"><div class="sigil"></div></div>
+                <div class="face front" id="frontMinor"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Spread Majors (hidden unless spread mode) -->
+          <div class="cardSlot" id="slotPast" style="display:none">
+            <div class="slotLabel">
+              <span class="pillTag">PAST</span>
+              <span class="pillTag" id="slotPastName">—</span>
+            </div>
+            <div class="card3d" id="cardPast" title="Click to draw">
+              <div class="inner" id="innerPast">
+                <div class="face back"><div class="sigil"></div></div>
+                <div class="face front" id="frontPast"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cardSlot" id="slotPresent" style="display:none">
+            <div class="slotLabel">
+              <span class="pillTag">PRESENT</span>
+              <span class="pillTag" id="slotPresentName">—</span>
+            </div>
+            <div class="card3d" id="cardPresent" title="Click to draw">
+              <div class="inner" id="innerPresent">
+                <div class="face back"><div class="sigil"></div></div>
+                <div class="face front" id="frontPresent"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cardSlot" id="slotThreat" style="display:none">
+            <div class="slotLabel">
+              <span class="pillTag">THREAT</span>
+              <span class="pillTag" id="slotThreatName">—</span>
+            </div>
+            <div class="card3d" id="cardThreat" title="Click to draw">
+              <div class="inner" id="innerThreat">
+                <div class="face back"><div class="sigil"></div></div>
+                <div class="face front" id="frontThreat"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cardSlot" id="slotDriver" style="display:none">
+            <div class="slotLabel">
+              <span class="pillTag">DRIVER</span>
+              <span class="pillTag" id="slotDriverName">—</span>
+            </div>
+            <div class="card3d" id="cardDriver" title="Click to draw">
+              <div class="inner" id="innerDriver">
+                <div class="face back"><div class="sigil"></div></div>
+                <div class="face front" id="frontDriver"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT -->
+    <section class="panel" id="rightPanel">
+      <header>
+        <h2>Generated Output</h2>
+        <div class="miniBtns">
+          <button class="miniBtn" id="btnCopyAll" disabled>Copy All</button>
+          <button class="miniBtn" id="btnExportCard" disabled>Export Card PNG</button>
+          <button class="miniBtn" id="btnExportJSON" disabled>Export JSON</button>
+        </div>
+      </header>
+      <div class="content out" id="outArea">
+        <div class="block">
+          <h3>How it works</h3>
+          <div class="mono">
+Draw → get a coherent hook (Major + Minor) → receive:
+- Core Scenario
+- Combat encounter (objective-driven)
+- Social encounter (stakes + motive)
+- Exploration encounter (discovery + risk)
+
+Use Escalate to add a complication when players pivot.
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast">Copied</div>
+
+  <canvas id="exportCanvas" width="900" height="1300" style="display:none"></canvas>
+
+<script>
+(() => {
+  // -----------------------
+  // Utilities
+  // -----------------------
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => [...document.querySelectorAll(sel)];
+  const rnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const pickN = (arr, n) => {
+    const a = arr.slice();
+    const out = [];
+    while (out.length < n && a.length){
+      out.push(a.splice(Math.floor(Math.random()*a.length), 1)[0]);
+    }
+    return out;
+  };
+  const nowStamp = () => {
+    const d = new Date();
+    return d.toLocaleString(undefined, {year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+  };
+
+  function toast(msg){
+    const el = $("#toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    setTimeout(() => el.classList.remove("show"), 950);
+  }
+
+  async function copyText(text){
+    try{
+      await navigator.clipboard.writeText(text);
+      toast("Copied");
+    }catch(e){
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      toast("Copied");
+    }
+  }
+
+  function spawnSpark(){
+    const wrap = $("#cardWrap");
+    const s = document.createElement("div");
+    s.className = "spark";
+    const rect = wrap.getBoundingClientRect();
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top + rect.height/2;
+    const x = cx + (Math.random()*260 - 130);
+    const y = cy + (Math.random()*120 - 60);
+    s.style.left = x + "px";
+    s.style.top = y + "px";
+    document.body.appendChild(s);
+    s.addEventListener("animationend", () => s.remove(), {once:true});
+  }
+
+  // -----------------------
+  // Tone / theme mapping
+  // -----------------------
+  function toneMeta(v){
+    if (v < 20) return {label:"Heroic", hint:"hopeful outcomes, bold wins"};
+    if (v < 45) return {label:"Adventurous", hint:"high energy, classic fantasy"};
+    if (v < 65) return {label:"Balanced", hint:"heroic stakes, grounded consequences"};
+    if (v < 85) return {label:"Gritty", hint:"hard choices, costly victories"};
+    return {label:"Bleak", hint:"uncertainty, danger, sacrifices"};
+  }
+
+  const themeLex = {
+    fantasy: {
+      palette: ["ancient", "forgotten", "misty", "wind-carved", "moonlit", "ironbound", "emerald", "sunken", "hollow"],
+      factions: ["a merchant consortium", "a knightly order", "a local guild", "a temple", "a thieves’ ring", "a rival adventuring party"],
+      foes: ["bandits", "goblinoid raiders", "undead", "cultists", "mercenaries", "wild beasts"],
+      places: ["border fort", "market town", "ruined shrine", "old road", "riverside camp", "noble estate"],
+      twists: ["the ‘villain’ is protecting someone", "the evidence is forged", "a third party benefits most", "the patron lied by omission"],
+      hazards: ["collapsed ground", "spreading fire", "flooding tunnels", "poisonous spores", "unstable scaffolding", "ice-slick terrain"],
+      socialStakes: ["a public scandal", "a hostage situation", "trade collapse", "religious outrage", "a duel challenge", "a vote or trial"],
+      discoveries: ["a hidden ledger", "a concealed passage", "a forgotten treaty", "a smuggler cache", "a burial marker", "a coded map"]
+    },
+    grimdark: {
+      palette: ["ashen", "rusted", "blighted", "sour", "blackened", "bone-white", "grim", "sodden", "shattered"],
+      factions: ["a penal militia", "a plague cult", "a starving commune", "a secret police cell", "a warlord’s retinue", "a heretic sect"],
+      foes: ["deserters", "press-gangs", "ghouls", "fanatics", "hunters", "war-dogs"],
+      places: ["mass grave field", "ration line", "burned village", "flooded trench", "crumbling hospice", "ruined watchtower"],
+      twists: ["there is no clean solution", "helping one side damns another", "the ‘safe’ route is worse", "the prize is cursed or tainted"],
+      hazards: ["disease exposure", "panic stampede", "smoke-choked alleys", "razorwire barricades", "contaminated water", "structural collapse"],
+      socialStakes: ["lynch mob pressure", "ration riots", "forced conscription", "confession/extortion", "public execution", "blackmail"],
+      discoveries: ["a confession note", "a corpse with a signet", "a hidden quarantine mark", "a war map", "a stolen ration seal", "a sealed confession box"]
+    },
+    political: {
+      palette: ["gilded", "ceremonial", "quiet", "carefully-staged", "silken", "marble", "velvet", "whispered", "sealed"],
+      factions: ["a noble house", "a spy network", "a trade league", "a magistrate’s office", "a diplomatic envoy", "a militant faction"],
+      foes: ["assassins", "agents", "enforcers", "blackmailers", "saboteurs", "duelists"],
+      places: ["council hall", "gala", "a customs gate", "safehouse", "courthouse", "manor garden"],
+      twists: ["the target wants to be caught", "the ‘ally’ is double-dealing", "the scandal is a distraction", "the real leverage is personal"],
+      hazards: ["guards everywhere", "magic wards / alarms", "poisoned wine", "social faux pas", "paper trails", "time pressure"],
+      socialStakes: ["a treaty signing", "inheritance dispute", "election of an office", "blackmail exposure", "hostile negotiation", "public debate"],
+      discoveries: ["a coded letter", "a signet impression", "a forged decree", "a hidden witness", "a payment trail", "a secret passage plan"]
+    },
+    horror: {
+      palette: ["damp", "creaking", "whispering", "moth-eaten", "moon-sick", "blood-cold", "fogbound", "staring", "unwelcome"],
+      factions: ["a missing persons committee", "a fearful village circle", "a secret cult", "a wary priesthood", "a hunter’s lodge", "a cursed family"],
+      foes: ["restless dead", "things in the walls", "possessed townsfolk", "stalkers", "witches", "aberrant beasts"],
+      places: ["lonely manor", "foggy moor road", "a drowned chapel", "crypt stair", "abandoned mill", "candlelit inn"],
+      twists: ["the threat is inside the party’s trust circle", "the ‘monster’ is a victim", "the curse spreads through kindness", "the exit is not the exit"],
+      hazards: ["failing light", "panic visions", "closing doors", "haunting whispers", "rotting floors", "choking fog"],
+      socialStakes: ["mass hysteria", "confession under fear", "protecting the innocent", "breaking a taboo", "a haunting bargain", "a cursed oath"],
+      discoveries: ["a child’s drawing", "a diary page", "a hidden bone charm", "a blood-stained contract", "a burial record", "a sigil mark"]
+    }
+
+    ,mythic: {
+      palette: ["star-forged","oracle-sung","storm-crowned","titan-buried","sun-bright","wyrm-scarred","ivory","thunderous","fate-bound"],
+      factions: ["a divine procession","a hero-cult","an oracle collegium","a city of bronze","a sacred league","a titan’s descendants"],
+      foes: ["myth-beasts","champions","vengeful spirits","harrowed giants","oathbreakers","sky-raiders"],
+      places: ["temple atop cliffs","arena of echoes","island of statues","cyclopean bridge","oracle cavern","sunken palace"],
+      twists: ["a prophecy is misread","the ‘villain’ fulfills fate","the gods are divided","a relic chooses its bearer"],
+      hazards: ["divine omens","storm-winds","labyrinthine halls","curse backlash","living stone","river of stars"],
+      socialStakes: ["a sacred oath","a rite of kingship","a public trial by ordeal","a festival of masks","a supplication to the gods","a feud arbitration"],
+      discoveries: ["a true-name fragment","a shattered relic","a hidden lineage","a forbidden hymn","a map of constellations","a sealed titan-sigil"]
+    },
+    swashbuckling: {
+      palette: ["salt-kissed","sunlit","dashing","candlelit","scarlet","gilded","laughing","stormy","smoke-wreathed"],
+      factions: ["a privateer crew","a noble salon","a dockside union","a duelist school","a customs office","a masked society"],
+      foes: ["cutthroats","naval marines","rival captains","assassins","corsairs","mercenary duelists"],
+      places: ["harbor district","galleon deck","opera house","coastal fort","smuggler tunnels","moonlit promenade"],
+      twists: ["the treasure is a message","the ‘pirates’ are patriots","a betrayal is staged","the law is bought"],
+      hazards: ["burning rigging","rolling decks","powder smoke","crowded balconies","broken chandeliers","flooding holds"],
+      socialStakes: ["a duel of honor","a gala scandal","a hostage negotiation","a mutiny vote","a courtroom spectacle","a clandestine rendezvous"],
+      discoveries: ["a captain’s log","a coded sea chart","a forged letter of marque","a hidden hold","a stolen signet","a map to a safe harbor"]
+    },
+    noir: {
+      palette: ["rain-slick","neon","smoke-stained","late-night","cut-glass","grimy","shadowed","whispered","wired"],
+      factions: ["a city precinct","a union hall","a nightclub syndicate","a charity front","a private firm","a street crew"],
+      foes: ["fixers","dirty cops","enforcers","blackmailers","arsonists","hired muscle"],
+      places: ["alleyway","speakeasy","tenement stair","bridge underpass","hotel lobby","records office"],
+      twists: ["the client is the culprit","the evidence was planted","the witness is paid off","the ‘missing’ chose to vanish"],
+      hazards: ["police pressure","media frenzy","tailing shadows","hidden cameras","burning files","time-sensitive leverage"],
+      socialStakes: ["a public hearing","a union vote","a courtroom ambush","a scandal leak","a backroom deal","a desperate plea"],
+      discoveries: ["a torn photo","a wiretap log","a hidden key","a ledger of payoffs","a matchbook clue","a safe deposit receipt"]
+    },
+    desert: {
+      palette: ["sun-blasted","dust-choked","glass-sanded","mirage-bright","salt-crusted","ashen","wind-howled","copper","bleached"],
+      factions: ["a caravan guild","a water-keeper cult","a dune tribe","a desert kingdom envoy","a tomb-warden circle","a spice cartel"],
+      foes: ["raiders","sand-stalkers","cursed dead","scorpion riders","mercenary scouts","zealots"],
+      places: ["oasis town","buried temple","salt flat road","ruined aqueduct","black glass canyon","storm-worn ziggurat"],
+      twists: ["the water is poisoned","the map is wrong on purpose","the ‘ruin’ is inhabited","the relic is a prison"],
+      hazards: ["sandstorm","heat exhaustion","sinkholes","scarce water","razor glass","night-cold exposure"],
+      socialStakes: ["water rights dispute","caravan contract","tribal oath","tomb access negotiation","price war","hostage bargain"],
+      discoveries: ["a hidden cistern","a starmap slab","a smuggler waypoint","an old royal seal","a buried war banner","a jar of cursed sand"]
+    },
+    planar: {
+      palette: ["impossible","prismatic","echoing","gravity-wrong","mirror-bright","ink-black","humming","fractured","luminous"],
+      factions: ["a planar embassy","a cult of thresholds","a gatekeeper order","a dream-cartographer guild","a scholar cabal","a wandering court"],
+      foes: ["outsiders","echo-things","dream predators","void mercenaries","mirror doubles","law-spirits"],
+      places: ["gatehouse","floating market","infinite stair","mirrored hall","a city in a bottle","storm of paper lanterns"],
+      twists: ["the plane is negotiating","your memories are currency","time loops locally","the ‘map’ is alive"],
+      hazards: ["reality shear","memory drain","gravity shifts","language breaks","contract spirits","wrong-door syndrome"],
+      socialStakes: ["a binding contract","a treaty of passage","a debt claimed","a true-name dispute","an extradition demand","a public paradox trial"],
+      discoveries: ["a gate-key","a true-name shard","a stitched map","a bottled message","a forbidden sigil","a debt ledger of souls"]
+    },
+    steampunk: {
+      palette: ["brass","soot-streaked","clockwork","steam-hazed","riveted","lacquered","spark-lit","iron","mechanical"],
+      factions: ["an inventor’s guild","a rail barony","a newspaper syndicate","a street mechanic union","a skyship fleet","a ministry bureau"],
+      foes: ["saboteurs","strikebreakers","automatons","private guards","spy-runners","airship raiders"],
+      places: ["gearworks","rail station","foundry district","sky-dock","undercity tunnels","exhibition hall"],
+      twists: ["the machine is sentient","the patent is stolen","the ‘accident’ is planned","the fuel supply is cursed"],
+      hazards: ["pressure bursts","sparking arcs","moving machinery","toxic smoke","runaway carts","structural vibration"],
+      socialStakes: ["a public demonstration","a labor strike","a patent hearing","a sabotage trial","a guild election","a rail contract dispute"],
+      discoveries: ["a coded blueprint","a hidden gear-key","a forged stamp","a smuggled component","a blackmail photo","a secret workshop"]
+    },
+    cyberpunk: {
+      palette: ["neon","chrome","glitching","rainy","holo-lit","wired","synthetic","siren-bright","back-alley"],
+      factions: ["a megacorp division","a street gang","a netrunner crew","a union collective","a private security firm","an activist cell"],
+      foes: ["hit-squads","drones","corporate agents","cyber-assassins","augmented bruisers","data-thieves"],
+      places: ["arcology lobby","server farm","night market","rooftop garden","metro tunnel","clinic backroom"],
+      twists: ["the target is an AI","the job is a setup","the data is someone’s memories","the ‘fixer’ works for the corp"],
+      hazards: ["camera nets","ICE firewalls","crowded choke points","EMP risk","toxic runoff","hostile PR narrative"],
+      socialStakes: ["board vote","broadcast exposé","union negotiation","hostage livestream","trial of public opinion","blackmail drop"],
+      discoveries: ["a deadman switch","a private key shard","a hidden implant","a secret contract","a payment trail","a vault location"]
+    },
+    scifi: {
+      palette: ["sterile","starlit","ion-bright","dusty","humming","cold","radiant","silent","sealed"],
+      factions: ["a research directorate","a colonial council","a salvage crew","a religious order","a trade convoy","a security detachment"],
+      foes: ["pirates","rogue marines","alien fauna","nanite swarms","synthetics","cult extremists"],
+      places: ["orbital station","terraform outpost","derelict ship","cargo ring","ice moon vault","communications array"],
+      twists: ["the signal is a lure","the ‘artifact’ is a warning","someone is a clone","the station is quarantined"],
+      hazards: ["decompression risk","radiation leaks","power failure","hostile gravity","sealed bulkheads","oxygen timer"],
+      socialStakes: ["quarantine vote","evacuation priority","jurisdiction dispute","mutiny hearing","diplomatic contact","resource allocation"],
+      discoveries: ["a corrupted log","a hidden compartment","a strange biomarker","a star map","a falsified report","a second transmitter"]
+    }
+
+  
+  };
+
+  
+  // -----------------------
+  // Cards (Decks)
+  // -----------------------
+
+  // Hybrid majors (encounter-forward, faster prompts)
+  const hybridMajors = [
+    { id:"broken_oath", name:"The Broken Oath", axis:"betrayal / alliance fracture", hook:"A vow has been violated. Someone wants the fallout to spread.", revAxis:"forced reconciliation / coerced loyalty", revHook:"A ‘peace’ is demanded. The cost is silence." },
+    { id:"the_crown", name:"The Crown", axis:"power struggle", hook:"Authority is contested. The ‘rightful’ claim is dangerous.", revAxis:"hollow authority / puppet rule", revHook:"The crown is real—its wearer isn’t." },
+    { id:"the_beast", name:"The Beast", axis:"uncontrolled threat", hook:"A threat is loose. The first story told about it is wrong.", revAxis:"contained rage / baited trap", revHook:"The beast is penned… and someone wants you inside the pen." },
+    { id:"the_veil", name:"The Veil", axis:"hidden truth", hook:"Something is concealed. Pull the thread and more unravels.", revAxis:"misdirection / false clarity", revHook:"Someone ‘reveals’ the truth—so you stop asking questions." },
+    { id:"ashen_banner", name:"The Ashen Banner", axis:"war / unrest", hook:"Conflict is rising. Every choice picks a side.", revAxis:"cold ceasefire / powder keg", revHook:"Peace is signed. The knives are already out." },
+    { id:"drowned_king", name:"The Drowned King", axis:"forgotten ruler / legacy", hook:"An old claim resurfaces. The past wants its due.", revAxis:"buried history / denied inheritance", revHook:"Someone destroyed the records. The truth survived anyway." },
+    { id:"the_merchant", name:"The Merchant", axis:"greed / trade", hook:"Profit drives the crisis. Someone is cornered—and desperate.", revAxis:"debt bondage / predatory charity", revHook:"Help is offered—tied to an invisible chain." },
+    { id:"hollow_city", name:"The Hollow City", axis:"ruins / decay", hook:"A place is dying—or already dead. Something still moves inside it.", revAxis:"gentrified rot / pretty lie", revHook:"The city looks restored. The rot is simply hidden." },
+    { id:"red_harvest", name:"The Red Harvest", axis:"famine / plague", hook:"Resources fail. People do terrible things to survive.", revAxis:"hoarded abundance / manufactured scarcity", revHook:"There is enough—someone made it ‘not enough’." },
+    { id:"black_star", name:"The Black Star", axis:"omen / catastrophe", hook:"A bad sign becomes real. Time is against you.", revAxis:"false prophecy / engineered panic", revHook:"The omen is staged. The stampede is the weapon." },
+    { id:"iron_chain", name:"The Iron Chain", axis:"oppression", hook:"Control tightens. Someone needs help—quietly, fast.", revAxis:"rebellion crushed / resistance compromised", revHook:"The resistance has a leak. It might be you." },
+    { id:"shattered_seal", name:"The Shattered Seal", axis:"instability / breach", hook:"A boundary broke. What spills through changes the rules.", revAxis:"patchwork barrier / brittle fix", revHook:"The seal is ‘repaired.’ One hard push will shatter it again." },
+  ];
+
+  // Classic tarot majors (22) adapted into encounter prompts
+  const classicMajors = [
+    { id:"fool", name:"0 — The Fool", axis:"leap of faith / fresh start", hook:"Someone takes a risk that pulls you in.", revAxis:"recklessness / ignorance", revHook:"The leap wasn’t brave—it was careless." },
+    { id:"magician", name:"I — The Magician", axis:"power used with intent", hook:"A tool, talent, or spell changes the situation.", revAxis:"trickery / misdirection", revHook:"The ‘miracle’ is a con—or a trap." },
+    { id:"high_priestess", name:"II — The High Priestess", axis:"secrets / intuition", hook:"A hidden truth waits behind polite silence.", revAxis:"withheld knowledge / paranoia", revHook:"Clues are buried. Trust becomes costly." },
+    { id:"empress", name:"III — The Empress", axis:"growth / abundance", hook:"Prosperity attracts attention—good and bad.", revAxis:"smothering control / scarcity fears", revHook:"Care becomes possession. Plenty becomes leverage." },
+    { id:"emperor", name:"IV — The Emperor", axis:"order / authority", hook:"Rules tighten—officially or unofficially.", revAxis:"tyranny / brittle regime", revHook:"Authority overreaches and cracks." },
+    { id:"hierophant", name:"V — The Hierophant", axis:"tradition / doctrine", hook:"A rite, law, or faith must be obeyed—or broken.", revAxis:"heresy / corruption", revHook:"The institution is rotten, and it knows you see it." },
+    { id:"lovers", name:"VI — The Lovers", axis:"bond / choice", hook:"A relationship forces a defining decision.", revAxis:"temptation / fracture", revHook:"The bond becomes a wedge." },
+    { id:"chariot", name:"VII — The Chariot", axis:"momentum / conquest", hook:"Someone pushes forward; stopping them has a cost.", revAxis:"loss of control / stalled advance", revHook:"The charge falters—dangerously." },
+    { id:"strength", name:"VIII — Strength", axis:"courage / restraint", hook:"Mercy and resolve are tested in public.", revAxis:"cruelty / fear", revHook:"Strength is mistaken for violence." },
+    { id:"hermit", name:"IX — The Hermit", axis:"isolation / seeking", hook:"A crucial answer is hidden away with a reluctant keeper.", revAxis:"secrecy / withdrawal", revHook:"The keeper won’t speak—unless forced." },
+    { id:"wheel", name:"X — Wheel of Fortune", axis:"turning tides / luck", hook:"A reversal of fortune reshapes alliances.", revAxis:"bad timing / rigged game", revHook:"The wheel is fixed. Someone chose the outcome." },
+    { id:"justice", name:"XI — Justice", axis:"law / consequence", hook:"A judgment must be made—and witnessed.", revAxis:"bias / injustice", revHook:"The verdict is decided before the hearing." },
+    { id:"hanged_man", name:"XII — The Hanged Man", axis:"sacrifice / new view", hook:"Progress requires giving something up.", revAxis:"martyrdom / stubbornness", revHook:"Someone clings to suffering to avoid change." },
+    { id:"death", name:"XIII — Death", axis:"ending / transformation", hook:"A chapter closes—by choice or by force.", revAxis:"refusal to change / lingering ruin", revHook:"The old won’t die. It becomes a problem." },
+    { id:"temperance", name:"XIV — Temperance", axis:"balance / synthesis", hook:"Two sides can be reconciled—if someone mediates.", revAxis:"imbalance / excess", revHook:"A compromise turns poisonous." },
+    { id:"devil", name:"XV — The Devil", axis:"bondage / vice", hook:"A deal, addiction, or fear holds someone hostage.", revAxis:"breaking chains / exposure", revHook:"The chain can snap—if you pull now." },
+    { id:"tower", name:"XVI — The Tower", axis:"sudden collapse", hook:"A structure—physical or political—falls fast.", revAxis:"averted disaster / delayed ruin", revHook:"The collapse is postponed, not prevented." },
+    { id:"star", name:"XVII — The Star", axis:"hope / guidance", hook:"A sign offers a path through chaos.", revAxis:"false hope / burnout", revHook:"The sign misleads—or you’re too tired to follow it." },
+    { id:"moon", name:"XVIII — The Moon", axis:"illusion / fear", hook:"Nothing is as it seems. Follow the wrong shadow and you’re lost.", revAxis:"clarity / truth surfacing", revHook:"The fog thins—revealing something worse." },
+    { id:"sun", name:"XIX — The Sun", axis:"success / revelation", hook:"Truth comes into the open, changing everything.", revAxis:"overexposure / hubris", revHook:"The spotlight burns." },
+    { id:"judgement", name:"XX — Judgement", axis:"reckoning / return", hook:"The past calls in a debt—publicly.", revAxis:"avoidance / denial", revHook:"The reckoning is coming. Someone tries to hide." },
+    { id:"world", name:"XXI — The World", axis:"completion / new horizon", hook:"A cycle ends; a gate opens to the next.", revAxis:"unfinished business / loose ends", revHook:"You can’t leave until you settle what’s behind you." },
+  ];
+
+  // Minor "drivers" (event cards)
+  const driverMinors = [
+    { id:"ambush", name:"Ambush", pressure:"sudden violence", prompt:"Someone strikes first to control the narrative.", revPressure:"a feigned attack", revPrompt:"Violence is staged to justify a crackdown." },
+    { id:"disappearance", name:"Disappearance", pressure:"missing person / thing", prompt:"Someone vanished—and the reason matters more than where.", revPressure:"a forced return", revPrompt:"The missing reappears with a story that doesn’t fit." },
+    { id:"border_crossing", name:"Border Crossing", pressure:"jurisdiction / tension", prompt:"Crossing a line triggers rules, fear, or force.", revPressure:"smuggled authority", revPrompt:"Someone brings ‘law’ where it doesn’t belong." },
+    { id:"festival", name:"Festival", pressure:"crowds / cover", prompt:"Joy is a mask. Trouble hides in plain sight.", revPressure:"panic in the crowd", revPrompt:"Celebration flips to stampede—who benefits?" },
+    { id:"assassination", name:"Assassination", pressure:"targeted killing", prompt:"A life is threatened. Saving them changes politics.", revPressure:"a protected target", revPrompt:"The target is bait—meant to lure protectors in." },
+    { id:"siege", name:"Siege", pressure:"time + scarcity", prompt:"Supplies dwindle. Something must break.", revPressure:"a fake siege", revPrompt:"The ‘blockade’ is a cover for quiet extraction." },
+    { id:"duel", name:"Duel", pressure:"honor + spectacle", prompt:"A challenge forces a public commitment.", revPressure:"dishonorable rules", revPrompt:"The duel’s terms are rigged to humiliate." },
+    { id:"sabotage", name:"Sabotage", pressure:"systems fail", prompt:"Someone wants the machine to stop—today.", revPressure:"silent maintenance", revPrompt:"A ‘fix’ is performed that actually plants a flaw." },
+    { id:"smuggling", name:"Smuggling", pressure:"hidden cargo", prompt:"Contraband moves. Interfere and you earn enemies.", revPressure:"false contraband", revPrompt:"The ‘illegal’ cargo is a decoy for something worse." },
+    { id:"inheritance", name:"Inheritance", pressure:"claim + legitimacy", prompt:"A claim changes hands. The paperwork is weaponized.", revPressure:"disputed lineage", revPrompt:"A ‘heir’ appears with perfect documents." },
+    { id:"ritual", name:"Ritual", pressure:"countdown", prompt:"A process is underway. Interrupting it has consequences.", revPressure:"ritual backlash", revPrompt:"Stopping it triggers a dangerous rebound." },
+    { id:"missing_caravan", name:"Missing Caravan", pressure:"lost route", prompt:"Something vanished along a known path. The gap is suspicious.", revPressure:"found—too late", revPrompt:"The caravan returns… wrong." },
+    { id:"prisoner_exchange", name:"Prisoner Exchange", pressure:"fragile truce", prompt:"A trade must happen. If it fails, war follows.", revPressure:"double-cross", revPrompt:"The exchange is an ambush in formal clothes." },
+    { id:"broken_treaty", name:"Broken Treaty", pressure:"legal breach", prompt:"A pact is disputed. Proof is worth more than blades.", revPressure:"forged compliance", revPrompt:"A ‘signed’ treaty is produced—everyone swears it’s fake." },
+    { id:"storm", name:"Storm", pressure:"environmental threat", prompt:"Nature turns hostile. Choices become smaller and sharper.", revPressure:"calm before it hits", revPrompt:"The storm pauses—so something else can move." },
+    { id:"refugees", name:"Refugees", pressure:"human cost", prompt:"People flee. Someone exploits the chaos.", revPressure:"false refugees", revPrompt:"A column hides infiltrators (or contraband)." },
+  ];
+
+  // Tarot suit minors (56) — generated with strong suit/rank prompts
+  function buildSuitMinors(){
+    const suits = [
+      { key:"wands", label:"Wands", basePressure:"ambition / initiative", suitPrompt:["a bold plan", "a risky venture", "a charismatic leader", "a spark that spreads"] },
+      { key:"cups", label:"Cups", basePressure:"relationships / emotion", suitPrompt:["a confession", "a betrayal of trust", "a reunion", "a hard goodbye"] },
+      { key:"swords", label:"Swords", basePressure:"conflict / truth", suitPrompt:["an accusation", "a harsh truth", "a strategic strike", "a legal threat"] },
+      { key:"pentacles", label:"Pentacles", basePressure:"resources / stability", suitPrompt:["a debt", "a contract", "a shortage", "a valuable opportunity"] }
+    ];
+
+    const ranks = [
+      { key:"ace", name:"Ace", p:["begins", "appears", "is offered"], q:["a new opportunity", "a new tool", "a new connection"] },
+      { key:"two", name:"Two", p:["splits", "balances", "negotiates"], q:["two options", "a delicate alliance", "a forked path"] },
+      { key:"three", name:"Three", p:["builds", "coordinates", "supports"], q:["a team effort", "a plan in motion", "shared stakes"] },
+      { key:"four", name:"Four", p:["stabilizes", "holds", "defends"], q:["a safehouse", "a truce", "a guarded position"] },
+      { key:"five", name:"Five", p:["clashes", "fails", "competes"], q:["a messy conflict", "a public loss", "infighting"] },
+      { key:"six", name:"Six", p:["wins", "returns", "recovers"], q:["a victory", "a homecoming", "a reclaimed asset"] },
+      { key:"seven", name:"Seven", p:["tests", "tempts", "risks"], q:["a gamble", "an illusion", "a stolen advantage"] },
+      { key:"eight", name:"Eight", p:["accelerates", "moves", "works"], q:["rapid action", "a tight schedule", "skilled labor"] },
+      { key:"nine", name:"Nine", p:["persists", "guards", "endures"], q:["last defenses", "hard-won caution", "tension at the edge"] },
+      { key:"ten", name:"Ten", p:["overloads", "culminates", "breaks"], q:["a breaking point", "too many burdens", "a final push"] },
+      { key:"page", name:"Page", p:["announces", "studies", "spies"], q:["news", "curiosity", "a young agent"] },
+      { key:"knight", name:"Knight", p:["charges", "pursues", "presses"], q:["momentum", "a pursuit", "a bold demand"] },
+      { key:"queen", name:"Queen", p:["influences", "protects", "manages"], q:["soft power", "a patron", "a decisive leader"] },
+      { key:"king", name:"King", p:["rules", "claims", "enforces"], q:["authority", "a decree", "an ultimatum"] },
+    ];
+
+    const minors = [];
+    for (const s of suits){
+      for (const r of ranks){
+        const id = `${r.key}_of_${s.key}`;
+        const name = `${r.name} of ${s.label}`;
+        const pressure = `${s.basePressure}`;
+        const verb = rnd(r.p);
+        const focus = rnd(r.q);
+        const seed = rnd(s.suitPrompt);
+        const prompt = `A situation ${verb}: ${focus} tied to ${seed}.`;
+        const revPressure = `${s.basePressure} (blocked / twisted)`;
+        const revPrompt = `The same force turns inward: ${seed} becomes a complication instead of a solution.`;
+        minors.push({ id, name, pressure, prompt, revPressure, revPrompt });
+      }
+    }
+    return minors;
+  }
+  const suitMinors = buildSuitMinors();
+
+  // Pool selectors
+  function getMajorPool(){
+    const sel = $("#majorDeck")?.value || "hybrid";
+    if (sel === "classic") return classicMajors;
+    if (sel === "mixed") return [...hybridMajors, ...classicMajors];
+    return hybridMajors;
+  }
+  function getMinorPool(){
+    const sel = $("#minorDeck")?.value || "drivers";
+    if (sel === "suits") return suitMinors;
+    if (sel === "mixed") return [...driverMinors, ...suitMinors];
+    return driverMinors;
+  }
+
+  function withReversal(card, kind){
+    const enabled = $("#useReversals")?.checked;
+    if (!enabled) return { ...card, reversed:false };
+
+    const reversed = Math.random() < 0.5;
+    if (!reversed) return { ...card, reversed:false };
+
+    if (kind === "major"){
+      return { ...card, reversed:true, axis: card.revAxis || card.axis, hook: card.revHook || card.hook };
+    }
+    return { ...card, reversed:true, pressure: card.revPressure || card.pressure, prompt: card.revPrompt || card.prompt };
+  }
+
+  const archetypes = {
+    combatObjectives: [
+      "protect a vulnerable target", "hold a chokepoint for 6 rounds",
+      "capture a fleeing courier", "disable a device / wagon", "break an encirclement",
+      "retrieve an item mid-fight", "survive an extraction", "stop a ritual mid-combat",
+      "escape with proof", "defend a location until reinforcements arrive",
+      "force a surrender without slaughter", "seize the high ground", "destroy a supply cache",
+      "buy time while an ally works", "defeat the leader to end the fight", "keep civilians alive",
+      "stop a runaway hazard", "hold the line while retreating", "rescue captives mid-battle"
+    ],
+    socialApproaches: [
+      "negotiate safe passage", "de-escalate a public confrontation",
+      "extract a confession", "secure an alliance", "mediate a dispute",
+      "intimidate or outmaneuver a rival", "convince a skeptic with evidence",
+      "trade favors under pressure", "stall for time while someone acts",
+      "win a formal debate", "offer a compromise with teeth", "stage a public demonstration",
+      "get someone alone without alarming them", "flip an enemy lieutenant", "call in a debt"
+    ],
+    explorationModes: [
+      "track signs through hostile terrain", "infiltrate quietly to find proof",
+      "search a compromised structure before it collapses",
+      "navigate a hazard-filled route", "decode a clue chain",
+      "recover an object from a dangerous site", "map an unknown interior",
+      "follow a suspicious supply line", "discover who is really involved",
+      "tail a suspect through crowded streets", "survive a night watch in a cursed place",
+      "shadow an official route to find the weak link", "run a stakeout under pressure"
+    ],
+    complicationBeats: [
+      "a third party arrives", "the weather turns dangerous",
+      "the ‘obvious’ culprit has an alibi", "an innocent is blamed publicly",
+      "the item is a decoy", "your patron is implicated",
+      "the enemy wants you alive", "time pressure doubles",
+      "a promised ally fails to show", "the location becomes unstable",
+      "communications break down", "supplies are stolen", "a witness changes their story",
+      "someone important is recognized", "a timer starts ticking loudly"
+    ],
+    escalationBeats: [
+      "A second incident hits elsewhere, splitting attention.",
+      "The antagonist offers a deal that would ‘solve’ things—at a cost.",
+      "A public announcement reframes the party as the problem.",
+      "A key witness disappears mid-scene.",
+      "A hidden faction makes a move and demands immediate response.",
+      "The ‘solution’ triggers a larger threat (ripple effect).",
+      "Authorities impose a deadline or lockdown.",
+      "A betrayal occurs within an allied group.",
+      "The villain reveals they expected this—and prepared.",
+      "A ‘helpful’ authority figure demands control of the outcome."
+    ],
+    hooks: [
+      "Someone is framed.", "A secret pact surfaces.", "A rival wants credit.",
+      "A resource shortage forces bad choices.", "A taboo is broken.",
+      "A map/ledger points to bigger players.", "A witness is terrified into silence.",
+      "A ‘hero’ is actually the villain.", "The crisis was engineered.",
+      "The ‘solution’ makes a new enemy.", "The truth would ruin someone innocent.",
+      "A fake prophecy is circulated.", "A debt is called in at the worst time."
+    ],
+    rewards: [
+      "a favor owed by a powerful figure", "a cache of rare materials",
+      "a map to a hidden route", "access to restricted archives",
+      "a rescued ally who becomes a contact", "a relic with a narrow, useful power",
+      "a legal pardon (or protection)", "a stronghold upgrade opportunity"
+    ],
+    clocks: [
+      "24 hours until the next incident", "3 scenes before the ritual completes",
+      "one night before the convoy moves", "a week before the vote/trial",
+      "two days before the quarantine hardens", "one hour before the ship departs"
+    ],
+    clues: [
+      "a contradictory witness statement", "a distinctive residue / scent",
+      "a repeated symbol or signet", "a gap in official records",
+      "a payment trail", "a map fragment", "a coded phrase overheard twice"
+    ]
+  };
+
+  // -----------------------
+  // Encounter assembly
+  // -----------------------
+  function buildScenario({major, minor, theme, tier, tone, regionTag}){
+    const L = themeLex[theme];
+    const toneM = toneMeta(tone);
+
+    const place = rnd(L.places);
+    const adj = rnd(L.palette);
+    const factionA = rnd(L.factions);
+    const factionB = rnd(L.factions.filter(f => f !== factionA));
+    const foe = rnd(L.foes);
+    const hazard = rnd(L.hazards);
+    const twist = rnd(L.twists);
+    const stake = rnd(L.socialStakes);
+    const discovery = rnd(L.discoveries);
+
+    const location = regionTag?.trim()
+      ? `${adj} ${place} (${regionTag.trim()})`
+      : `${adj} ${place}`;
+
+    const threatHint =
+      tier === "low" ? "Threat: 1–2 tough enemies or 6–10 weak foes; keep hazards simple."
+      : tier === "mid" ? "Threat: mixed foes + one elite; include a meaningful hazard."
+      : "Threat: elite foes + layered objectives; hazards should force hard choices.";
+
+    const consequence =
+      toneM.label === "Heroic" ? "Failure costs reputation or opportunity."
+      : toneM.label === "Adventurous" ? "Failure costs resources and momentum."
+      : toneM.label === "Balanced" ? "Failure costs allies, leverage, or safety."
+      : toneM.label === "Gritty" ? "Failure costs lives, trust, and lasting scars."
+      : "Failure reshapes the region permanently.";
+
+    const core = {
+      tension: `${major.axis} pressured by ${minor.pressure}`,
+      location,
+      involved: `${factionA} and ${factionB}`,
+      immediate: `The situation ignites when ${minor.prompt.toLowerCase()} (${major.hook})`,
+      hidden: `${twist}. Evidence points toward ${discovery}.`,
+      stakes: stake,
+      threatHint,
+      consequence
+    };
+
+    const combat = {
+      objective: rnd(archetypes.combatObjectives),
+      enemies: `${foe} backed by ${factionB}`,
+      complication: hazard,
+      twist: rnd([twist, ...archetypes.hooks])
+    };
+
+    const social = {
+      approach: rnd(archetypes.socialApproaches),
+      scene: `${stake} at ${location}`,
+      npc: `A representative of ${factionA} wants something they can’t admit.`,
+      motive: rnd([`They need leverage on ${factionB}.`, `They fear exposure of ${discovery}.`, `They want the party to take the blame.`, `They’re trying to stop a worse outcome.`]),
+      fail: consequence
+    };
+
+    const exploration = {
+      mode: rnd(archetypes.explorationModes),
+      route: `Investigate ${location} to find ${discovery}.`,
+      risk: hazard,
+      reveal: rnd([
+        `The real instigator is linked to ${factionA}.`,
+        `The breach traces back to an old agreement (or forged document).`,
+        `A hidden cache proves who benefits.`,
+        `The next incident is already planned.`
+      ])
+    };
+
+    return {
+      major: major.name,
+      minor: minor.name,
+      majorReversed: !!major.reversed,
+      minorReversed: !!minor.reversed,
+      theme,
+      tier,
+      tone: toneMeta(tone).label,
+      generatedAt: nowStamp(),
+      core, combat, social, exploration,
+      extras: { clock: rnd(archetypes.clocks), clue: rnd(archetypes.clues), reward: rnd(archetypes.rewards) }
+    };
+  }
+
+  function escalate(summary){
+    if (!summary || !summary.core) return summary;
+    const beat = rnd(archetypes.escalationBeats);
+    const add = rnd(archetypes.complicationBeats);
+    summary.escalation = {
+      beat,
+      add: `Complication: ${add}.`,
+      pressure: "Raise stakes, add timer, or introduce a third faction."
+    };
+    summary.core.consequence = summary.core.consequence + " Escalation increases urgency.";
+    return summary;
+  }
+
+  // -----------------------
+  // Rendering
+  // -----------------------
+  function escapeHTML(s){
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+
+  function renderEncounterBlock(title, fields){
+    const b = document.createElement("div");
+    b.className = "block";
+    const rows = Object.entries(fields).map(([k,v]) => `
+      <div class="k">${escapeHTML(k)}</div><div class="v">${escapeHTML(v)}</div>
+    `).join("");
+    b.innerHTML = `
+      <h3>${escapeHTML(title)}</h3>
+      <div class="kv">${rows}</div>
+    `;
+    return b;
+  }
+
+  function renderOutput(summary){
+    const out = $("#outArea");
+    out.innerHTML = "";
+
+    const headerBlock = document.createElement("div");
+    headerBlock.className = "block";
+    headerBlock.innerHTML = `
+      <h3>Draw</h3>
+      <div class="mono">${escapeHTML(summary.generatedAt)}
+Major: ${escapeHTML(summary.major)}${summary.majorReversed ? " (Reversed)" : ""}
+Minor: ${escapeHTML(summary.minor)}${summary.minorReversed ? " (Reversed)" : ""}
+Theme: ${escapeHTML(summary.theme.toUpperCase())} · Tier: ${escapeHTML(summary.tier.toUpperCase())} · Tone: ${escapeHTML(summary.tone)}</div>
+    `;
+    out.appendChild(headerBlock);
+
+    const core = document.createElement("div");
+    core.className = "block";
+    core.innerHTML = `
+      <h3>Core Scenario</h3>
+      <div class="kv">
+        <div class="k">Tension</div><div class="v">${escapeHTML(summary.core.tension)}</div>
+        <div class="k">Location</div><div class="v">${escapeHTML(summary.core.location)}</div>
+        <div class="k">Involved</div><div class="v">${escapeHTML(summary.core.involved)}</div>
+        <div class="k">Immediate</div><div class="v">${escapeHTML(summary.core.immediate)}</div>
+        <div class="k">Hidden</div><div class="v">${escapeHTML(summary.core.hidden)}</div>
+        <div class="k">Stakes</div><div class="v">${escapeHTML(summary.core.stakes)}</div>
+        <div class="k">Scale</div><div class="v">${escapeHTML(summary.core.threatHint)}</div>
+      </div>
+    `;
+    out.appendChild(core);
+
+    out.appendChild(renderEncounterBlock("Combat Option", {
+      "Objective": summary.combat.objective,
+      "Enemies": summary.combat.enemies,
+      "Complication": summary.combat.complication,
+      "Twist": summary.combat.twist
+    }));
+
+    out.appendChild(renderEncounterBlock("Social Option", {
+      "Approach": summary.social.approach,
+      "Scene": summary.social.scene,
+      "Key NPC": summary.social.npc,
+      "Hidden Motive": summary.social.motive,
+      "If it fails": summary.social.fail
+    }));
+
+    out.appendChild(renderEncounterBlock("Exploration Option", {
+      "Mode": summary.exploration.mode,
+      "Task": summary.exploration.route,
+      "Risk": summary.exploration.risk,
+      "Reveal": summary.exploration.reveal
+    }));
+
+    if (summary.extras){
+      out.appendChild(renderEncounterBlock("Extras", {
+        "Clock": summary.extras.clock,
+        "Clue": summary.extras.clue,
+        "Reward": summary.extras.reward
+      }));
+    }
+
+
+    if (summary.escalation){
+      const esc = document.createElement("div");
+      esc.className = "block";
+      esc.innerHTML = `
+        <h3>Escalation</h3>
+        <div class="mono">• ${escapeHTML(summary.escalation.beat)}
+• ${escapeHTML(summary.escalation.add)}
+• ${escapeHTML(summary.escalation.pressure)}</div>
+      `;
+      out.appendChild(esc);
+    }
+
+    $("#btnCopyAll").disabled = false;
+    $("#btnExportCard").disabled = false;
+    $("#btnExportJSON").disabled = false;
+    $("#btnRedrawMinor").disabled = false;
+    $("#btnEscalate").disabled = false;
+    $("#btnSave").disabled = false;
+
+    $("#statusLine").textContent = "Generated";
+  }
+
+  function formatAllText(summary){
+    const lines = [];
+    lines.push(`ENCOUNTER TAROT — ${summary.generatedAt}`);
+    lines.push(`Major: ${summary.major}${summary.majorReversed ? ' (Reversed)' : ''}`);
+    lines.push(`Minor: ${summary.minor}${summary.minorReversed ? ' (Reversed)' : ''}`);
+    lines.push(`Theme: ${summary.theme} | Tier: ${summary.tier} | Tone: ${summary.tone}`);
+    lines.push("");
+    lines.push("CORE SCENARIO");
+    lines.push(`- Tension: ${summary.core.tension}`);
+    lines.push(`- Location: ${summary.core.location}`);
+    lines.push(`- Involved: ${summary.core.involved}`);
+    lines.push(`- Immediate: ${summary.core.immediate}`);
+    lines.push(`- Hidden: ${summary.core.hidden}`);
+    lines.push(`- Stakes: ${summary.core.stakes}`);
+    lines.push(`- Scale: ${summary.core.threatHint}`);
+    lines.push("");
+    lines.push("COMBAT OPTION");
+    lines.push(`- Objective: ${summary.combat.objective}`);
+    lines.push(`- Enemies: ${summary.combat.enemies}`);
+    lines.push(`- Complication: ${summary.combat.complication}`);
+    lines.push(`- Twist: ${summary.combat.twist}`);
+    lines.push("");
+    lines.push("SOCIAL OPTION");
+    lines.push(`- Approach: ${summary.social.approach}`);
+    lines.push(`- Scene: ${summary.social.scene}`);
+    lines.push(`- Key NPC: ${summary.social.npc}`);
+    lines.push(`- Hidden Motive: ${summary.social.motive}`);
+    lines.push(`- If it fails: ${summary.social.fail}`);
+    lines.push("");
+    lines.push("EXPLORATION OPTION");
+    lines.push(`- Mode: ${summary.exploration.mode}`);
+    lines.push(`- Task: ${summary.exploration.route}`);
+    lines.push(`- Risk: ${summary.exploration.risk}`);
+    lines.push(`- Reveal: ${summary.exploration.reveal}`);
+    if (summary.extras){
+      lines.push("");
+      lines.push("EXTRAS");
+      lines.push(`- Clock: ${summary.extras.clock}`);
+      lines.push(`- Clue: ${summary.extras.clue}`);
+      lines.push(`- Reward: ${summary.extras.reward}`);
+    }
+    if (summary.escalation){
+      lines.push("");
+      lines.push("ESCALATION");
+      lines.push(`- ${summary.escalation.beat}`);
+      lines.push(`- ${summary.escalation.add}`);
+      lines.push(`- ${summary.escalation.pressure}`);
+    }
+    return lines.join("\n");
+  }
+
+  // -----------------------
+  // Center card front templates
+  // -----------------------
+  function buildCardFrontHTML({typeLabel, title, subtitle, hook, theme, tier, toneLabel}){
+    const themeUp = theme.toUpperCase();
+    const tierUp = tier.toUpperCase();
+    const toneUp = toneLabel;
+
+    return `
+      <div class="frontContent">
+        <div class="cardTop">
+          <div class="tag">${escapeHTML(typeLabel)}</div>
+          <div class="tag tight">${escapeHTML(themeUp)} · ${escapeHTML(tierUp)} · ${escapeHTML(toneUp)}</div>
+        </div>
+
+        <h1 class="cardTitle">${escapeHTML(title || "—")}</h1>
+        <p class="cardSub">${escapeHTML(subtitle || "")}</p>
+        <p class="cardHook">${escapeHTML(hook || "")}</p>
+
+        <div class="cardMeta">
+          <div class="metaBox"><b>Tone</b><div>${escapeHTML(toneUp)}</div></div>
+          <div class="metaBox"><b>Tier</b><div>${escapeHTML(tierUp)}</div></div>
+        </div>
+
+        <div class="cardFooter">
+          <div style="display:flex;align-items:center;gap:8px"><span class="dot"></span><span>${escapeHTML(typeLabel)}</span></div>
+          <div>${escapeHTML(themeUp)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function setCardFlipped(cardId, flipped){
+    const el = $(cardId);
+    if (!el) return;
+    el.classList.toggle("flipped", !!flipped);
+  }
+
+  // -----------------------
+  // Export (kept simple: exports the “combined” result card as before)
+  // -----------------------
+  function exportCardPNG(summary){
+    const canvas = $("#exportCanvas");
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width, h = canvas.height;
+
+    ctx.clearRect(0,0,w,h);
+    const grad = ctx.createLinearGradient(0,0,0,h);
+    grad.addColorStop(0, "rgba(15,22,48,0.96)");
+    grad.addColorStop(1, "rgba(7,8,19,0.98)");
+    ctx.fillStyle = grad;
+    roundRect(ctx, 0, 0, w, h, 48, true, false);
+
+    ctx.strokeStyle = "rgba(124,246,255,0.35)";
+    ctx.lineWidth = 4;
+    roundRect(ctx, 16, 16, w-32, h-32, 42, false, true);
+
+    ctx.fillStyle = "rgba(233,236,255,0.95)";
+    ctx.font = "900 64px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.fillText(summary.major, 72, 140);
+
+    ctx.fillStyle = "rgba(170,178,229,0.95)";
+    ctx.font = "800 32px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.fillText(summary.minor, 72, 190);
+
+    drawPill(ctx, 72, 222, `THEME: ${summary.theme.toUpperCase()}`);
+    drawPill(ctx, 320, 222, `TIER: ${summary.tier.toUpperCase()}`);
+    drawPill(ctx, 520, 222, `TONE: ${summary.tone.toUpperCase()}`);
+
+    ctx.strokeStyle = "rgba(124,246,255,0.25)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(72, 270);
+    ctx.lineTo(w-72, 270);
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(233,236,255,0.92)";
+    ctx.font = "900 28px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.fillText("CORE SCENARIO", 72, 330);
+
+    ctx.fillStyle = "rgba(233,236,255,0.88)";
+    ctx.font = "600 24px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    const coreText = [
+      `Tension: ${summary.core.tension}`,
+      `Location: ${summary.core.location}`,
+      `Immediate: ${summary.core.immediate}`,
+      `Hidden: ${summary.core.hidden}`,
+      `Stakes: ${summary.core.stakes}`
+    ].join("\n");
+    drawMultiline(ctx, coreText, 72, 370, w-144, 32);
+
+    let y = 620;
+    y = drawSection(ctx, "COMBAT OPTION", {
+      "Objective": summary.combat.objective,
+      "Enemies": summary.combat.enemies,
+      "Complication": summary.combat.complication,
+      "Twist": summary.combat.twist
+    }, 72, y, w-144);
+
+    y += 24;
+    y = drawSection(ctx, "SOCIAL OPTION", {
+      "Approach": summary.social.approach,
+      "Scene": summary.social.scene,
+      "Key NPC": summary.social.npc,
+      "Hidden Motive": summary.social.motive
+    }, 72, y, w-144);
+
+    y += 24;
+    y = drawSection(ctx, "EXPLORATION OPTION", {
+      "Mode": summary.exploration.mode,
+      "Task": summary.exploration.route,
+      "Risk": summary.exploration.risk,
+      "Reveal": summary.exploration.reveal
+    }, 72, y, w-144);
+
+    if (summary.escalation){
+      y += 24;
+      y = drawSection(ctx, "ESCALATION", {
+        "Beat": summary.escalation.beat,
+        "Complication": summary.escalation.add
+      }, 72, y, w-144);
+    }
+
+    ctx.fillStyle = "rgba(170,178,229,0.85)";
+    ctx.font = "700 20px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.fillText(`Generated: ${summary.generatedAt}`, 72, h-72);
+
+    const url = canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `encounter_tarot_${summary.major.replace(/\s+/g,'_')}_${summary.minor.replace(/\s+/g,'_')}.png`;
+    a.click();
+  }
+
+  function roundRect(ctx, x, y, w, h, r, fill, stroke){
+    const radius = typeof r === "number" ? {tl:r,tr:r,br:r,bl:r} : r;
+    ctx.beginPath();
+    ctx.moveTo(x + radius.tl, y);
+    ctx.lineTo(x + w - radius.tr, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + radius.tr);
+    ctx.lineTo(x + w, y + h - radius.br);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - radius.br, y + h);
+    ctx.lineTo(x + radius.bl, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - radius.bl);
+    ctx.lineTo(x, y + radius.tl);
+    ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+    ctx.closePath();
+    if (fill) ctx.fill();
+    if (stroke) ctx.stroke();
+  }
+  function drawPill(ctx, x, y, text){
+    ctx.font = "900 18px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    const padX = 14;
+    const tw = ctx.measureText(text).width;
+    const w = tw + padX*2;
+    const h = 36;
+    ctx.fillStyle = "rgba(7,8,19,0.55)";
+    ctx.strokeStyle = "rgba(59,74,160,0.45)";
+    ctx.lineWidth = 2;
+    roundRect(ctx, x, y, w, h, 18, true, true);
+    ctx.fillStyle = "rgba(233,236,255,0.92)";
+    ctx.fillText(text, x + padX, y + 24);
+  }
+  function drawMultiline(ctx, text, x, y, maxW, lineH){
+    const lines = [];
+    for (const raw of text.split("\n")){
+      wrapLine(ctx, raw, maxW).forEach(l => lines.push(l));
+    }
+    lines.forEach((line,i) => ctx.fillText(line, x, y + i*lineH));
+    return y + lines.length*lineH;
+  }
+  function wrapLine(ctx, text, maxW){
+    const words = text.split(" ");
+    const lines = [];
+    let cur = "";
+    for (const w of words){
+      const test = cur ? cur + " " + w : w;
+      if (ctx.measureText(test).width <= maxW) cur = test;
+      else { if (cur) lines.push(cur); cur = w; }
+    }
+    if (cur) lines.push(cur);
+    return lines;
+  }
+  function drawSection(ctx, title, kv, x, y, w){
+    ctx.fillStyle = "rgba(7,8,19,0.42)";
+    ctx.strokeStyle = "rgba(59,74,160,0.35)";
+    ctx.lineWidth = 2;
+    roundRect(ctx, x, y, w, 10, 22, true, true);
+
+    ctx.fillStyle = "rgba(233,236,255,0.92)";
+    ctx.font = "900 26px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.fillText(title, x+20, y+46);
+
+    ctx.fillStyle = "rgba(233,236,255,0.88)";
+    ctx.font = "650 22px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    let yy = y + 84;
+    for (const [k,v] of Object.entries(kv)){
+      ctx.fillStyle = "rgba(170,178,229,0.95)";
+      ctx.font = "800 20px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.fillText(`${k}:`, x+20, yy);
+      ctx.fillStyle = "rgba(233,236,255,0.90)";
+      ctx.font = "650 22px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      yy = drawMultiline(ctx, v, x+140, yy, w-160, 30) + 10;
+    }
+
+    const h = (yy - y) + 10;
+    ctx.save();
+    ctx.globalCompositeOperation = "destination-over";
+    ctx.fillStyle = "rgba(7,8,19,0.42)";
+    ctx.strokeStyle = "rgba(59,74,160,0.35)";
+    ctx.lineWidth = 2;
+    roundRect(ctx, x, y, w, h, 22, true, true);
+    ctx.restore();
+
+    return y + h;
+  }
+
+  // -----------------------
+  // State
+  // -----------------------
+  const state = {
+    mode: "quick",
+    current: null,
+    currentMajor: null,
+    currentMinor: null,
+    spread: null,
+    log: []
+  };
+
+  const LOG_KEY = "encounter_tarot_log_v1";
+
+  function loadLog(){
+    try{
+      const raw = localStorage.getItem(LOG_KEY);
+      if (raw) state.log = JSON.parse(raw) || [];
+    }catch(e){ state.log = []; }
+    renderLog();
+  }
+  function saveLog(){
+    localStorage.setItem(LOG_KEY, JSON.stringify(state.log.slice(-50)));
+  }
+  function renderLog(){
+    const logArea = $("#logArea");
+    if (!state.log.length){
+      logArea.textContent = "No saved encounters yet.";
+      return;
+    }
+    logArea.innerHTML = "";
+    const wrap = document.createElement("div");
+    state.log.slice().reverse().forEach((item, idx) => {
+      const div = document.createElement("div");
+      div.className = "logItem";
+      div.innerHTML = `
+        <div class="t">${escapeHTML(item.major)} — ${escapeHTML(item.minor)}</div>
+        <div class="m">${escapeHTML(item.generatedAt)} · ${escapeHTML(item.theme.toUpperCase())} · ${escapeHTML(item.tone)}</div>
+        <div class="a">${escapeHTML(item.core.location)}</div>
+        <div class="miniBtns" style="margin-top:8px">
+          <button class="miniBtn" data-act="load" data-i="${state.log.length-1-idx}">Load</button>
+          <button class="miniBtn" data-act="copy" data-i="${state.log.length-1-idx}">Copy</button>
+          <button class="miniBtn" data-act="delete" data-i="${state.log.length-1-idx}">Delete</button>
+        </div>
+      `;
+      wrap.appendChild(div);
+    });
+    logArea.appendChild(wrap);
+
+    wrap.addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      const i = +btn.dataset.i;
+      const act = btn.dataset.act;
+      const item = state.log[i];
+      if (!item) return;
+
+      if (act === "load"){
+        // We can restore the output; the individual “card faces” will be rebuilt with the names we saved.
+        state.current = item;
+        $("#pillPick").textContent = `${item.major} + ${item.minor}`;
+        setMode(state.mode); // ensure layout matches mode selection
+        // Show as a standard Major+Minor view when loading from log
+        showQuickLayout();
+        fillMajorMinorCards({name:item.major, reversed:item.majorReversed}, {name:item.minor, reversed:item.minorReversed}, item.theme, item.tier, item.tone, item.core.immediate);
+        renderOutput(item);
+        toast("Loaded");
+      }
+      if (act === "copy"){
+        copyText(formatAllText(item));
+      }
+      if (act === "delete"){
+        state.log.splice(i,1);
+        saveLog();
+        renderLog();
+        toast("Deleted");
+      }
+    });
+  }
+
+  // -----------------------
+  // Layout switching (Quick/Manual vs Spread)
+  // -----------------------
+  function showQuickLayout(){
+    $("#cardsGrid").classList.remove("spread");
+    $("#slotMajor").style.display = "";
+    $("#slotMinor").style.display = "";
+    $("#slotPast").style.display = "none";
+    $("#slotPresent").style.display = "none";
+    $("#slotThreat").style.display = "none";
+    $("#slotDriver").style.display = "none";
+  }
+
+  function showSpreadLayout(){
+    $("#cardsGrid").classList.add("spread");
+    $("#slotMajor").style.display = "none";
+    $("#slotMinor").style.display = "none";
+    $("#slotPast").style.display = "";
+    $("#slotPresent").style.display = "";
+    $("#slotThreat").style.display = "";
+    $("#slotDriver").style.display = "";
+  }
+
+  function setMode(mode){
+    state.mode = mode;
+    $$(".seg button").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+    $("#pillMode").textContent = "Mode: " + (mode === "quick" ? "Quick Draw" : mode === "manual" ? "Manual" : "3-Card Spread");
+    $("#statusLine").textContent = "Ready";
+    if (mode === "spread") showSpreadLayout(); else showQuickLayout();
+  }
+
+  $("#modeQuick").addEventListener("click", () => setMode("quick"));
+  $("#modeManual").addEventListener("click", () => setMode("manual"));
+  $("#modeSpread").addEventListener("click", () => setMode("spread"));
+
+  // -----------------------
+  // Card filling helpers
+  // -----------------------
+  function fillCard(frontEl, label, title, subtitle, hook){
+    const theme = $("#deckTheme").value;
+    const tier = $("#partyTier").value;
+    const tone = +$("#tone").value;
+    const toneL = toneMeta(tone).label;
+
+    frontEl.innerHTML = buildCardFrontHTML({
+      typeLabel: label,
+      title,
+      subtitle,
+      hook,
+      theme,
+      tier,
+      toneLabel: toneL
+    });
+  }
+
+  function fillMajorMinorCards(majorCard, minorCard, theme, tier, toneLabel, immediateHook){
+    const majorName = majorCard?.name || "—";
+    const minorName = minorCard?.name || "—";
+
+    $("#slotMajorName").textContent = majorName + (majorCard?.reversed ? " ⟲" : "");
+    $("#slotMinorName").textContent = minorName + (minorCard?.reversed ? " ⟲" : "");
+
+    const minorDeck = $("#minorDeck")?.value || "drivers";
+    const minorLabel = minorDeck === "suits" ? "MINOR ARCANA" : minorDeck === "mixed" ? "MINOR (MIXED)" : "MINOR DRIVER";
+
+    fillCard($("#frontMajor"), "MAJOR ARCANA", majorName + (majorCard?.reversed ? " (Reversed)" : ""), "", immediateHook || "");
+    fillCard($("#frontMinor"), minorLabel, minorName + (minorCard?.reversed ? " (Reversed)" : ""), "", "Situational pressure that shapes the scene.");
+
+    $("#cardMajor").classList.add("flipped");
+    $("#cardMinor").classList.add("flipped");
+  }
+
+  function fillSpreadCards(spread, combinedImmediate){
+    $("#slotPastName").textContent = spread.past.name + (spread.past.reversed ? " ⟲" : "");
+    $("#slotPresentName").textContent = spread.present.name + (spread.present.reversed ? " ⟲" : "");
+    $("#slotThreatName").textContent = spread.threat.name + (spread.threat.reversed ? " ⟲" : "");
+    $("#slotDriverName").textContent = spread.driver.name + (spread.driver.reversed ? " ⟲" : "");
+
+    fillCard($("#frontPast"), "PAST", spread.past.name + (spread.past.reversed ? " (Reversed)" : ""), spread.past.axis, spread.past.hook);
+    fillCard($("#frontPresent"), "PRESENT", spread.present.name + (spread.present.reversed ? " (Reversed)" : ""), spread.present.axis, spread.present.hook);
+    fillCard($("#frontThreat"), "THREAT", spread.threat.name + (spread.threat.reversed ? " (Reversed)" : ""), spread.threat.axis, spread.threat.hook);
+    fillCard($("#frontDriver"), "DRIVER", spread.driver.name + (spread.driver.reversed ? " (Reversed)" : ""), spread.driver.pressure, spread.driver.prompt);
+
+    $("#cardPast").classList.add("flipped");
+    $("#cardPresent").classList.add("flipped");
+    $("#cardThreat").classList.add("flipped");
+    $("#cardDriver").classList.add("flipped");
+  }
+
+  function resetCardsFlip(){
+    ["#cardMajor","#cardMinor","#cardPast","#cardPresent","#cardThreat","#cardDriver"].forEach(id => {
+      const el = $(id);
+      if (el) el.classList.remove("flipped");
+    });
+  }
+
+  // -----------------------
+  // Drawing
+  // -----------------------
+  function draw(){
+    const theme = $("#deckTheme").value;
+    const tier = $("#partyTier").value;
+    const tone = +$("#tone").value;
+    const regionTag = $("#regionTag").value;
+
+    if (state.mode === "spread"){
+      const spreadMajors = pickN(getMajorPool(), 3).map(m => withReversal(m,'major'));
+      const driver = withReversal(rnd(getMinorPool()), 'minor');
+      state.spread = { past: spreadMajors[0], present: spreadMajors[1], threat: spreadMajors[2], driver };
+
+      // Combine axes/hooks for generation coherence
+      const mergedMajor = {
+        name: spreadMajors[1].name,
+        axis: `${spreadMajors[0].axis} → ${spreadMajors[1].axis} → ${spreadMajors[2].axis}`,
+        hook: `Past: ${spreadMajors[0].hook} Present: ${spreadMajors[1].hook} Looming: ${spreadMajors[2].hook}`
+      };
+
+      state.currentMajor = mergedMajor;
+      state.currentMinor = driver;
+      state.current = buildScenario({ major: mergedMajor, minor: driver, theme, tier, tone, regionTag });
+      return state.current;
+    }
+
+    // Quick/Manual: show TWO cards (Major + Minor)
+    const major = withReversal(rnd(getMajorPool()), 'major');
+    let minor = withReversal(rnd(getMinorPool()), 'minor');
+    state.currentMajor = major;
+    state.currentMinor = minor;
+    state.current = buildScenario({ major, minor, theme, tier, tone, regionTag });
+    return state.current;
+  }
+
+  function redrawMinor(){
+    if (!state.currentMajor) return null;
+    const theme = $("#deckTheme").value;
+    const tier = $("#partyTier").value;
+    const tone = +$("#tone").value;
+    const regionTag = $("#regionTag").value;
+
+    let minor = withReversal(rnd(getMinorPool()), 'minor');
+    if (state.currentMinor && minor.id === state.currentMinor.id){
+      minor = withReversal(rnd(getMinorPool().filter(m => m.id !== state.currentMinor.id)), 'minor');
+    }
+    state.currentMinor = minor;
+
+    state.current = buildScenario({ major: state.currentMajor, minor, theme, tier, tone, regionTag });
+    return state.current;
+  }
+
+  function drawVisualsForCurrent(){
+    // sparks
+    for (let i=0;i<10;i++) setTimeout(spawnSpark, i*50);
+
+    const theme = $("#deckTheme").value;
+    const tier = $("#partyTier").value;
+    const tone = +$("#tone").value;
+    const toneL = toneMeta(tone).label;
+
+    $("#pillPick").textContent = state.mode === "spread"
+      ? `${state.spread.present.name} · Spread`
+      : `${state.currentMajor.name} + ${state.currentMinor.name}`;
+
+    resetCardsFlip();
+
+    if (state.mode === "spread"){
+      fillSpreadCards(state.spread, state.current?.core?.immediate);
+    } else {
+      fillMajorMinorCards(state.currentMajor, state.currentMinor, theme, tier, toneL, state.current?.core?.immediate);
+    }
+
+    // render output quickly
+    setTimeout(() => renderOutput(state.current), 220);
+  }
+
+  // -----------------------
+  // Buttons
+  // -----------------------
+  $("#btnDraw").addEventListener("click", () => {
+    draw();
+    drawVisualsForCurrent();
+  });
+
+  // Click any card to draw (fast mid-session)
+  ["#cardMajor","#cardMinor","#cardPast","#cardPresent","#cardThreat","#cardDriver"].forEach(id => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener("click", () => {
+      draw();
+      drawVisualsForCurrent();
+    });
+  });
+
+  $("#btnRedrawMinor").addEventListener("click", () => {
+    if (state.mode === "spread"){
+      // Redraw the DRIVER (minor) in spread mode
+      if (!state.spread) return;
+      let minor = withReversal(rnd(getMinorPool()), 'minor');
+      if (state.currentMinor && minor.id === state.currentMinor.id){
+        minor = withReversal(rnd(getMinorPool().filter(m => m.id !== state.currentMinor.id)), 'minor');
+      }
+      state.spread.driver = minor;
+      state.currentMinor = minor;
+
+      const theme = $("#deckTheme").value;
+      const tier = $("#partyTier").value;
+      const tone = +$("#tone").value;
+      const regionTag = $("#regionTag").value;
+
+      state.current = buildScenario({ major: state.currentMajor, minor, theme, tier, tone, regionTag });
+      drawVisualsForCurrent();
+      toast("Driver redrawn");
+      return;
+    }
+
+    const s = redrawMinor();
+    if (!s) return;
+    drawVisualsForCurrent();
+    toast("Minor redrawn");
+  });
+
+  $("#btnEscalate").addEventListener("click", () => {
+    if (!state.current) return;
+    escalate(state.current);
+    renderOutput(state.current);
+    toast("Escalated");
+  });
+
+  $("#btnCopyAll").addEventListener("click", () => {
+    if (!state.current) return;
+    copyText(formatAllText(state.current));
+  });
+
+  $("#btnExportJSON").addEventListener("click", () => {
+    if (!state.current) return;
+    copyText(JSON.stringify(state.current, null, 2));
+    toast("JSON copied");
+  });
+
+  $("#btnExportCard").addEventListener("click", () => {
+    if (!state.current) return;
+    exportCardPNG(state.current);
+  });
+
+  $("#btnSave").addEventListener("click", () => {
+    if (!state.current) return;
+    state.log.push(state.current);
+    state.log = state.log.slice(-50);
+    saveLog();
+    renderLog();
+    toast("Saved");
+  });
+
+  $("#btnClearLog").addEventListener("click", () => {
+    state.log = [];
+    saveLog();
+    renderLog();
+    toast("Cleared");
+  });
+
+  $("#btnCopyLog").addEventListener("click", () => {
+    if (!state.log.length) return copyText("No saved encounters.");
+    const text = state.log.map(item => formatAllText(item)).join("\n\n" + "-".repeat(40) + "\n\n");
+    copyText(text);
+  });
+
+  // -----------------------
+  // Tone UI updates
+  // -----------------------
+  function refreshTone(){
+    const t = +$("#tone").value;
+    const tm = toneMeta(t);
+    $("#toneLabel").textContent = tm.label;
+    $("#toneHint").textContent = tm.hint;
+    $("#statusLine").textContent = "Ready";
+  }
+  $("#tone").addEventListener("input", refreshTone);
+  $("#deckTheme").addEventListener("change", () => $("#statusLine").textContent = "Ready");
+  $("#partyTier").addEventListener("change", () => $("#statusLine").textContent = "Ready");
+
+  // -----------------------
+  // Enable/disable buttons depending on mode
+  // -----------------------
+  function setButtonsEnabled(hasDraw){
+    $("#btnCopyAll").disabled = !hasDraw;
+    $("#btnExportCard").disabled = !hasDraw;
+    $("#btnExportJSON").disabled = !hasDraw;
+    $("#btnRedrawMinor").disabled = !hasDraw;
+    $("#btnEscalate").disabled = !hasDraw;
+    $("#btnSave").disabled = !hasDraw;
+  }
+
+  // Patch renderOutput to also enable buttons
+  const _renderOutput = renderOutput;
+  renderOutput = function(summary){
+    _renderOutput(summary);
+    setButtonsEnabled(!!summary);
+  };
+
+  // -----------------------
+  // Keyboard shortcuts
+  // -----------------------
+  window.addEventListener("keydown", (e) => {
+if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c"){
+      const tag = (document.activeElement && document.activeElement.tagName || "").toLowerCase();
+      if (tag !== "input" && tag !== "textarea" && state.current){
+        e.preventDefault();
+        copyText(formatAllText(state.current));
+      }
+    }
+    if (e.key === "e" || e.key === "E"){
+      if (state.current){
+        escalate(state.current);
+        renderOutput(state.current);
+        toast("Escalated");
+      }
+    }
+    if (e.key === "m" || e.key === "M"){
+      if (!$("#btnRedrawMinor").disabled){
+        $("#btnRedrawMinor").click();
+      }
+    }
+  });
+
+  // -----------------------
+  // Init
+  // -----------------------
+  refreshTone();
+  setMode("quick");
+  loadLog();
+  showQuickLayout();
+  setButtonsEnabled(false);
+
+})();
+</script>
+</body>
+</html>
