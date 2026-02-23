@@ -39,7 +39,8 @@
     .app{
       height:100%;
       display:grid;
-      grid-template-columns: 320px minmax(360px,1fr) 420px;
+      /* Slightly wider left rail to prevent control squeeze with the Theme Editor */
+      grid-template-columns: 360px minmax(360px,1fr) 420px;
       gap:14px;
       padding:14px;
     }
@@ -160,6 +161,44 @@
     }
     .btn:disabled{opacity:.45; cursor:not-allowed; transform:none}
 
+
+    /* Left panel footer links */
+    .leftFooter{
+      padding: 12px 14px;
+      border-top:1px solid rgba(59,74,160,.26);
+      background: rgba(7,8,19,.20);
+    }
+    .leftFooterTitle{
+      font-size:11px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color: rgba(233,236,255,.86);
+      margin-bottom:8px;
+    }
+    .leftFooterLinks{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      font-size:12px;
+      color: var(--muted);
+    }
+    .leftFooterLinks a{
+      color: rgba(124,246,255,.92);
+      text-decoration:none;
+      font-weight:800;
+      border-bottom:1px solid rgba(124,246,255,.0);
+      transition: border-color .12s ease, transform .12s ease, opacity .12s ease;
+    }
+    .leftFooterLinks a:hover{
+      border-bottom-color: rgba(124,246,255,.55);
+      transform: translateY(-1px);
+    }
+    .leftFooterLinks .sep{
+      color: rgba(170,178,229,.55);
+      user-select:none;
+    }
+
     /* Center / Cards */
     .stage{
       height:100%;
@@ -226,7 +265,7 @@
     .slotLabel{
       display:flex;
       gap:8px;
-      flex-wrap:wrap;
+      flex-wrap:nowrap;
       justify-content:center;
       align-items:center;
       font-size:11px;
@@ -241,6 +280,16 @@
       background: rgba(7,8,19,.35);
     }
 
+    /* Keep slot labels on one line: truncate long names instead of wrapping */
+    #slotMajorName,#slotMinorName,#slotPastName,#slotPresentName,#slotThreatName,#slotDriverName{
+      flex: 1 1 auto;
+      min-width: 0;            /* allow flex item to shrink */
+      max-width: 220px;        /* prevents uneven wraps on wide titles */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
     .card3d{
       width:min(300px, 100%);
       aspect-ratio: 2.2/3.2;
@@ -564,6 +613,86 @@
       outline-offset: 2px;
     }
 
+
+    /* Custom Theme Editor */
+
+    .themeEditor h3{
+      cursor:pointer;
+      user-select:none;
+    }
+    .themeEditor h3:hover{
+      color: rgba(233,236,255,0.98);
+    }
+    .themeEditor h3:focus-visible{
+      outline: 2px solid rgba(124,246,255,.55);
+      outline-offset: 3px;
+      border-radius: 10px;
+    }
+    .themeEditor h3.collapsed{
+      opacity: .92;
+    }
+    /* prevent header toggle when clicking action buttons */
+    .themeEditor h3 .miniBtns button{ cursor:pointer; }
+
+    .themeEditor{
+      margin-top:14px;
+    }
+    .themeEditor .mini{
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+    }
+    .themeEditor input[type="text"], .themeEditor textarea, .themeEditor select{
+      width:100%;
+      background: rgba(7,8,19,.55);
+      border:1px solid rgba(59,74,160,.35);
+      color:var(--text);
+      border-radius: 12px;
+      padding:10px 10px;
+      outline:none;
+    }
+    .themeEditor textarea{min-height:92px; resize:vertical}
+    .themeEditor .two{
+      display:grid;
+      /* Left panel is intentionally narrow; keep this single-column so it doesn't get squished */
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+    .list{
+      margin-top:10px;
+      border:1px solid rgba(59,74,160,.26);
+      background: rgba(7,8,19,.22);
+      border-radius: 14px;
+      padding:8px;
+      max-height: 210px;
+      overflow:auto;
+    }
+    .li{
+      display:flex;
+      gap:8px;
+      align-items:flex-start;
+      justify-content:space-between;
+      padding:8px 8px;
+      border-radius: 12px;
+      border:1px solid rgba(59,74,160,.18);
+      background: rgba(7,8,19,.18);
+      margin-bottom:8px;
+    }
+    .li:last-child{margin-bottom:0}
+    .li .txt{
+      color:rgba(233,236,255,.92);
+      font-size:12px;
+      line-height:1.35;
+      word-break: break-word;
+      flex:1;
+    }
+    .li .acts{
+      display:flex; gap:6px; flex:0 0 auto;
+    }
+    .miniBtn.tiny{
+      padding:6px 8px;
+      font-size:11px;
+      border-radius: 10px;
+    }
+
     /* Make long labels / pills never overflow */
     .sub{max-width: 100%; overflow:hidden; text-overflow:ellipsis;}
 
@@ -596,6 +725,60 @@
 </select>
         
 </div>
+
+        <div class="block themeEditor" id="themeEditorBlock">
+          <h3 id="themeEditorHeader" role="button" tabindex="0" aria-expanded="true">Custom Theme Editor <span class="miniBtns">
+                        <button class="miniBtn" id="btnThemeSave">Save</button>
+            <button class="miniBtn" id="btnThemeExport">Export</button>
+          </span></h3>
+
+          <div id="themeEditorBody">
+          <div class="two">
+            <div>
+              <div class="row" style="margin-bottom:10px">
+                <label for="editThemeSelect">Theme</label>
+                <select id="editThemeSelect"></select>
+              </div>
+              <div class="row" style="margin-bottom:10px">
+                <label for="newThemeKey">New</label>
+                <input id="newThemeKey" type="text" placeholder="key (e.g., dark_fae) — optional" />
+              </div>
+              <div class="row" style="margin-bottom:0">
+                <label for="newThemeLabel">Label</label>
+                <input id="newThemeLabel" type="text" placeholder="display name (e.g., Dark Fae Court) — optional" />
+              </div>
+            </div>
+
+            <div>
+              <div class="row" style="margin-bottom:10px">
+                <label for="editThemeCategory">Category</label>
+                <select id="editThemeCategory">
+                  <option value="palette">palette</option>
+                  <option value="factions">factions</option>
+                  <option value="foes">foes</option>
+                  <option value="places">places</option>
+                  <option value="twists">twists</option>
+                  <option value="hazards">hazards</option>
+                  <option value="socialStakes">socialStakes</option>
+                  <option value="discoveries">discoveries</option>
+                </select>
+              </div>
+              <textarea id="editThemeEntry" placeholder="Add one or more entries — one per line"></textarea>
+              <div class="mini" style="margin-top:10px; justify-content:flex-end">
+                <button class="miniBtn" id="btnAddEntry">Add</button>
+                <button class="miniBtn danger" id="btnDeleteTheme" title="Deletes the selected custom theme (built-in themes cannot be deleted)">Delete Theme</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px; color:var(--muted); font-size:12px; line-height:1.35">
+            Entries are stored locally in your browser (LocalStorage). Export downloads a JSON file you can share or back up.
+          </div>
+
+          <div class="list" id="themeEntryList" aria-label="Theme entries list"></div>
+          </div>
+        </div>
+
 
         <div class="row">
           <label for="majorDeck">Major Deck</label>
@@ -673,6 +856,15 @@
           </div>
         </div>
       </div>
+
+      <footer class="leftFooter">
+        <div class="leftFooterTitle">Feedback &amp; Support</div>
+        <div class="leftFooterLinks">
+          <a href="https://github.com/Schlabbster/Arcane-Card-Engine/issues" target="_blank" rel="noopener">Report bugs / suggest features</a>
+          <span class="sep">·</span>
+          <a href="https://ko-fi.com/schlabbie" target="_blank" rel="noopener">Support on Ko‑fi</a>
+        </div>
+      </footer>
     </section>
 
     <!-- CENTER -->
@@ -780,8 +972,7 @@
         <h2>Generated Output</h2>
         <div class="miniBtns">
           <button class="miniBtn" id="btnCopyAll" disabled>Copy All</button>
-          <button class="miniBtn" id="btnExportCard" disabled>Export Card PNG</button>
-          <button class="miniBtn" id="btnExportJSON" disabled>Export JSON</button>
+<button class="miniBtn" id="btnExportJSON" disabled>Export JSON</button>
         </div>
       </header>
       <div class="content out" id="outArea">
@@ -874,131 +1065,1902 @@ Use Escalate to add a complication when players pivot.
     return {label:"Bleak", hint:"uncertainty, danger, sacrifices"};
   }
 
-  const themeLex = {
+    const themeLex = {
     fantasy: {
-      palette: ["ancient", "forgotten", "misty", "wind-carved", "moonlit", "ironbound", "emerald", "sunken", "hollow"],
-      factions: ["a merchant consortium", "a knightly order", "a local guild", "a temple", "a thieves’ ring", "a rival adventuring party"],
-      foes: ["bandits", "goblinoid raiders", "undead", "cultists", "mercenaries", "wild beasts"],
-      places: ["border fort", "market town", "ruined shrine", "old road", "riverside camp", "noble estate"],
-      twists: ["the ‘villain’ is protecting someone", "the evidence is forged", "a third party benefits most", "the patron lied by omission"],
-      hazards: ["collapsed ground", "spreading fire", "flooding tunnels", "poisonous spores", "unstable scaffolding", "ice-slick terrain"],
-      socialStakes: ["a public scandal", "a hostage situation", "trade collapse", "religious outrage", "a duel challenge", "a vote or trial"],
-      discoveries: ["a hidden ledger", "a concealed passage", "a forgotten treaty", "a smuggler cache", "a burial marker", "a coded map"]
+      palette: [
+        "ancient",
+        "forgotten",
+        "misty",
+        "wind-carved",
+        "moonlit",
+        "ironbound",
+        "emerald",
+        "sunken",
+        "hollow",
+        "verdant",
+        "storm-tossed",
+        "rune-etched",
+        "amber",
+        "thorny",
+        "silvered",
+        "twilight",
+        "ashen",
+        "marble",
+        "luminous"
+      ],
+      factions: [
+        "a merchant consortium",
+        "a knightly order",
+        "a local guild",
+        "a temple",
+        "a thieves\u2019 ring",
+        "a rival adventuring party",
+        "a border militia",
+        "a druid circle",
+        "a wizard cabal",
+        "a noble household",
+        "a monster-hunter lodge",
+        "a clandestine cult",
+        "a frontier commune"
+      ],
+      foes: [
+        "bandits",
+        "goblinoid raiders",
+        "undead",
+        "cultists",
+        "mercenaries",
+        "wild beasts",
+        "hobgoblin regulars",
+        "fey tricksters",
+        "oozes",
+        "elementals",
+        "cursed knights",
+        "giant-kin",
+        "assassins"
+      ],
+      places: [
+        "border fort",
+        "market town",
+        "ruined shrine",
+        "old road",
+        "riverside camp",
+        "noble estate",
+        "abandoned mine",
+        "forest crossroads",
+        "cliffside monastery",
+        "catacombs",
+        "wizard\u2019s tower",
+        "foggy marsh",
+        "bridge of stones",
+        "hidden grotto"
+      ],
+      twists: [
+        "the \u2018villain\u2019 is protecting someone",
+        "the evidence is forged",
+        "a third party benefits most",
+        "the patron lied by omission",
+        "the target is already dead",
+        "the threat is a distraction",
+        "the real leverage is emotional",
+        "the reward is cursed",
+        "a trusted ally is compromised",
+        "the map is bait",
+        "the authorities are involved",
+        "the \u2018monster\u2019 is a guardian"
+      ],
+      hazards: [
+        "collapsed ground",
+        "spreading fire",
+        "flooding tunnels",
+        "poisonous spores",
+        "unstable scaffolding",
+        "ice-slick terrain",
+        "arcane ward backlash",
+        "stampeding livestock",
+        "rockslide",
+        "enchanted darkness",
+        "crumbling stairs",
+        "toxic swamp gas",
+        "hunting traps",
+        "wild magic surges"
+      ],
+      socialStakes: [
+        "a public scandal",
+        "a hostage situation",
+        "trade collapse",
+        "religious outrage",
+        "a duel challenge",
+        "a vote or trial",
+        "a marriage contract",
+        "a succession dispute",
+        "a guild strike",
+        "a peace negotiation",
+        "a bounty proclamation",
+        "a trial by ordeal",
+        "a festival incident",
+        "a debt called in"
+      ],
+      discoveries: [
+        "a hidden ledger",
+        "a concealed passage",
+        "a forgotten treaty",
+        "a smuggler cache",
+        "a burial marker",
+        "a coded map",
+        "a cursed heirloom",
+        "a secret altar",
+        "a missing seal",
+        "a witness list",
+        "a stash of counterfeit coin",
+        "a ritual diagram",
+        "a blackmail note",
+        "a true-name fragment"
+      ]
     },
     grimdark: {
-      palette: ["ashen", "rusted", "blighted", "sour", "blackened", "bone-white", "grim", "sodden", "shattered"],
-      factions: ["a penal militia", "a plague cult", "a starving commune", "a secret police cell", "a warlord’s retinue", "a heretic sect"],
-      foes: ["deserters", "press-gangs", "ghouls", "fanatics", "hunters", "war-dogs"],
-      places: ["mass grave field", "ration line", "burned village", "flooded trench", "crumbling hospice", "ruined watchtower"],
-      twists: ["there is no clean solution", "helping one side damns another", "the ‘safe’ route is worse", "the prize is cursed or tainted"],
-      hazards: ["disease exposure", "panic stampede", "smoke-choked alleys", "razorwire barricades", "contaminated water", "structural collapse"],
-      socialStakes: ["lynch mob pressure", "ration riots", "forced conscription", "confession/extortion", "public execution", "blackmail"],
-      discoveries: ["a confession note", "a corpse with a signet", "a hidden quarantine mark", "a war map", "a stolen ration seal", "a sealed confession box"]
+      palette: [
+        "ashen",
+        "rusted",
+        "blighted",
+        "sour",
+        "blackened",
+        "bone-white",
+        "grim",
+        "sodden",
+        "shattered",
+        "tar-stained",
+        "smoke-choked",
+        "salt-bitten",
+        "scarred",
+        "mud-caked",
+        "blood-rusted",
+        "hollow-eyed",
+        "mildewed",
+        "charcoal",
+        "sallow"
+      ],
+      factions: [
+        "a penal militia",
+        "a plague cult",
+        "a starving commune",
+        "a secret police cell",
+        "a warlord\u2019s retinue",
+        "a heretic sect",
+        "a ration board",
+        "a trench-brotherhood",
+        "a scavenger cartel",
+        "a ruin-squatters\u2019 council",
+        "a zealot procession",
+        "a cremator guild",
+        "a debt-collectors\u2019 syndicate"
+      ],
+      foes: [
+        "deserters",
+        "press-gangs",
+        "ghouls",
+        "fanatics",
+        "hunters",
+        "war-dogs",
+        "mutineers",
+        "corpse-thieves",
+        "plaguebearers",
+        "black-market enforcers",
+        "razor-gang thugs",
+        "broken veterans",
+        "witch-burners"
+      ],
+      places: [
+        "mass grave field",
+        "ration line",
+        "burned village",
+        "flooded trench",
+        "crumbling hospice",
+        "ruined watchtower",
+        "execution square",
+        "collapsed factory",
+        "contaminated well",
+        "shanty maze",
+        "abattoir ruins",
+        "border checkpoint",
+        "quarantine ward",
+        "drowned cellar"
+      ],
+      twists: [
+        "there is no clean solution",
+        "helping one side damns another",
+        "the \u2018safe\u2019 route is worse",
+        "the prize is cursed or tainted",
+        "the cure is worse than the disease",
+        "the \u2018enemy\u2019 is starving",
+        "the leadership is lying",
+        "the proof is destroyed",
+        "the scapegoat is innocent",
+        "aid comes with chains",
+        "the riot was engineered",
+        "the truce is a trap"
+      ],
+      hazards: [
+        "disease exposure",
+        "panic stampede",
+        "smoke-choked alleys",
+        "razorwire barricades",
+        "contaminated water",
+        "structural collapse",
+        "sniper sightlines",
+        "acid rain",
+        "minefields",
+        "black ice",
+        "hunger exhaustion",
+        "mass hysteria",
+        "burning debris",
+        "blinding ashfall"
+      ],
+      socialStakes: [
+        "lynch mob pressure",
+        "ration riots",
+        "forced conscription",
+        "confession/extortion",
+        "public execution",
+        "blackmail",
+        "prison transport",
+        "mass burial disputes",
+        "curfew enforcement",
+        "refugee camp governance",
+        "labor strike",
+        "martial law decree",
+        "informant witch-hunt",
+        "tribunal sentencing"
+      ],
+      discoveries: [
+        "a confession note",
+        "a corpse with a signet",
+        "a hidden quarantine mark",
+        "a war map",
+        "a stolen ration seal",
+        "a sealed confession box",
+        "a list of informants",
+        "a forged travel pass",
+        "a blood-stained ledger",
+        "a cache of antibiotics",
+        "a mass grave marker",
+        "a coded whistle signal",
+        "a burned dispatch",
+        "a smuggler route"
+      ]
     },
     political: {
-      palette: ["gilded", "ceremonial", "quiet", "carefully-staged", "silken", "marble", "velvet", "whispered", "sealed"],
-      factions: ["a noble house", "a spy network", "a trade league", "a magistrate’s office", "a diplomatic envoy", "a militant faction"],
-      foes: ["assassins", "agents", "enforcers", "blackmailers", "saboteurs", "duelists"],
-      places: ["council hall", "gala", "a customs gate", "safehouse", "courthouse", "manor garden"],
-      twists: ["the target wants to be caught", "the ‘ally’ is double-dealing", "the scandal is a distraction", "the real leverage is personal"],
-      hazards: ["guards everywhere", "magic wards / alarms", "poisoned wine", "social faux pas", "paper trails", "time pressure"],
-      socialStakes: ["a treaty signing", "inheritance dispute", "election of an office", "blackmail exposure", "hostile negotiation", "public debate"],
-      discoveries: ["a coded letter", "a signet impression", "a forged decree", "a hidden witness", "a payment trail", "a secret passage plan"]
+      palette: [
+        "gilded",
+        "ceremonial",
+        "quiet",
+        "carefully-staged",
+        "silken",
+        "marble",
+        "velvet",
+        "whispered",
+        "sealed",
+        "perfumed",
+        "sunlit",
+        "pearled",
+        "lacquered",
+        "stately",
+        "polished",
+        "ink-dark",
+        "orchid",
+        "satin",
+        "deliberate"
+      ],
+      factions: [
+        "a noble house",
+        "a spy network",
+        "a trade league",
+        "a magistrate\u2019s office",
+        "a diplomatic envoy",
+        "a militant faction",
+        "a court salon",
+        "a banking consortium",
+        "a clerical council",
+        "a city watch captaincy",
+        "a legal guild",
+        "a foreign attach\u00e9",
+        "a propaganda bureau",
+        "a reform coalition"
+      ],
+      foes: [
+        "assassins",
+        "agents",
+        "enforcers",
+        "blackmailers",
+        "saboteurs",
+        "duelists",
+        "state inquisitors",
+        "paid witnesses",
+        "forgers",
+        "poisoners",
+        "street provocateurs",
+        "paparazzi scribes",
+        "mercenary guards",
+        "double agents"
+      ],
+      places: [
+        "council hall",
+        "gala",
+        "a customs gate",
+        "safehouse",
+        "courthouse",
+        "manor garden",
+        "archives office",
+        "embassy ballroom",
+        "mint and treasury",
+        "opera box",
+        "private chapel",
+        "roof terrace",
+        "prison intake",
+        "press room"
+      ],
+      twists: [
+        "the target wants to be caught",
+        "the \u2018ally\u2019 is double-dealing",
+        "the scandal is a distraction",
+        "the real leverage is personal",
+        "the evidence implicates your patron",
+        "the vote is already bought",
+        "a confession is coerced",
+        "the witness is missing",
+        "the \u2018assassin\u2019 is a decoy",
+        "a law is rewritten overnight",
+        "a marriage pact is weaponized",
+        "the documents are authentic\u2014but illegal"
+      ],
+      hazards: [
+        "guards everywhere",
+        "magic wards / alarms",
+        "poisoned wine",
+        "social faux pas",
+        "paper trails",
+        "time pressure",
+        "public scrutiny",
+        "coded etiquette",
+        "informant networks",
+        "sealed rooms",
+        "surveillance mirrors",
+        "legal traps",
+        "hostile press",
+        "bribery sting"
+      ],
+      socialStakes: [
+        "a treaty signing",
+        "inheritance dispute",
+        "election of an office",
+        "blackmail exposure",
+        "hostile negotiation",
+        "public debate",
+        "a confidence vote",
+        "a censure hearing",
+        "a public apology",
+        "a trial of legitimacy",
+        "a guild charter renewal",
+        "a trade embargo",
+        "a dueling injunction",
+        "a royal audience"
+      ],
+      discoveries: [
+        "a coded letter",
+        "a signet impression",
+        "a forged decree",
+        "a hidden witness",
+        "a payment trail",
+        "a secret passage plan",
+        "a draft law",
+        "a bribery ledger",
+        "a blackmail bundle",
+        "a counterfeit seal matrix",
+        "a private diary",
+        "a list of favors owed",
+        "a staged correspondence",
+        "an encrypted courier pouch"
+      ]
     },
     horror: {
-      palette: ["damp", "creaking", "whispering", "moth-eaten", "moon-sick", "blood-cold", "fogbound", "staring", "unwelcome"],
-      factions: ["a missing persons committee", "a fearful village circle", "a secret cult", "a wary priesthood", "a hunter’s lodge", "a cursed family"],
-      foes: ["restless dead", "things in the walls", "possessed townsfolk", "stalkers", "witches", "aberrant beasts"],
-      places: ["lonely manor", "foggy moor road", "a drowned chapel", "crypt stair", "abandoned mill", "candlelit inn"],
-      twists: ["the threat is inside the party’s trust circle", "the ‘monster’ is a victim", "the curse spreads through kindness", "the exit is not the exit"],
-      hazards: ["failing light", "panic visions", "closing doors", "haunting whispers", "rotting floors", "choking fog"],
-      socialStakes: ["mass hysteria", "confession under fear", "protecting the innocent", "breaking a taboo", "a haunting bargain", "a cursed oath"],
-      discoveries: ["a child’s drawing", "a diary page", "a hidden bone charm", "a blood-stained contract", "a burial record", "a sigil mark"]
-    }
-
-    ,mythic: {
-      palette: ["star-forged","oracle-sung","storm-crowned","titan-buried","sun-bright","wyrm-scarred","ivory","thunderous","fate-bound"],
-      factions: ["a divine procession","a hero-cult","an oracle collegium","a city of bronze","a sacred league","a titan’s descendants"],
-      foes: ["myth-beasts","champions","vengeful spirits","harrowed giants","oathbreakers","sky-raiders"],
-      places: ["temple atop cliffs","arena of echoes","island of statues","cyclopean bridge","oracle cavern","sunken palace"],
-      twists: ["a prophecy is misread","the ‘villain’ fulfills fate","the gods are divided","a relic chooses its bearer"],
-      hazards: ["divine omens","storm-winds","labyrinthine halls","curse backlash","living stone","river of stars"],
-      socialStakes: ["a sacred oath","a rite of kingship","a public trial by ordeal","a festival of masks","a supplication to the gods","a feud arbitration"],
-      discoveries: ["a true-name fragment","a shattered relic","a hidden lineage","a forbidden hymn","a map of constellations","a sealed titan-sigil"]
+      palette: [
+        "damp",
+        "creaking",
+        "whispering",
+        "moth-eaten",
+        "moon-sick",
+        "blood-cold",
+        "fogbound",
+        "staring",
+        "unwelcome",
+        "candle-guttered",
+        "rotting",
+        "sepulchral",
+        "itching",
+        "silence-thick",
+        "grave-sweet",
+        "worm-eaten",
+        "ashen",
+        "frost-bitten",
+        "echoing"
+      ],
+      factions: [
+        "a missing persons committee",
+        "a fearful village circle",
+        "a secret cult",
+        "a wary priesthood",
+        "a hunter\u2019s lodge",
+        "a cursed family",
+        "a midnight choir",
+        "a grave-wardens\u2019 order",
+        "a traveling exorcist",
+        "a shattered asylum staff",
+        "a folklorists\u2019 society",
+        "a s\u00e9ance circle",
+        "a vigilante mob"
+      ],
+      foes: [
+        "restless dead",
+        "things in the walls",
+        "possessed townsfolk",
+        "stalkers",
+        "witches",
+        "aberrant beasts",
+        "doppelgangers",
+        "poltergeists",
+        "flesh-eating swarms",
+        "hungry shadows",
+        "grave robbers",
+        "cult enforcers",
+        "nightmare spawn",
+        "blood-drunk hunters"
+      ],
+      places: [
+        "lonely manor",
+        "foggy moor road",
+        "a drowned chapel",
+        "crypt stair",
+        "abandoned mill",
+        "candlelit inn",
+        "rotting greenhouse",
+        "boarded-up asylum",
+        "graveyard hill",
+        "sewer shrine",
+        "attic nursery",
+        "mirror-lined hallway",
+        "dilapidated theater",
+        "witchwood clearing"
+      ],
+      twists: [
+        "the threat is inside the party\u2019s trust circle",
+        "the \u2018monster\u2019 is a victim",
+        "the curse spreads through kindness",
+        "the exit is not the exit",
+        "the haunting protects a secret",
+        "a bargain was made long ago",
+        "the priest is compromised",
+        "the relic is the trap",
+        "helping breaks a taboo",
+        "the killer is already dead",
+        "the town agreed to this",
+        "the \u2018cure\u2019 requires a sacrifice"
+      ],
+      hazards: [
+        "failing light",
+        "panic visions",
+        "closing doors",
+        "haunting whispers",
+        "rotting floors",
+        "choking fog",
+        "blood-slick stairs",
+        "possessed objects",
+        "sleep deprivation",
+        "maze-like corridors",
+        "grave gas",
+        "stinging insects",
+        "freezing drafts",
+        "sanity-fraying omens"
+      ],
+      socialStakes: [
+        "mass hysteria",
+        "confession under fear",
+        "protecting the innocent",
+        "breaking a taboo",
+        "a haunting bargain",
+        "a cursed oath",
+        "mob justice",
+        "quarantine of the \u2018infected\u2019",
+        "an exorcism rite",
+        "a funeral interruption",
+        "a missing child search",
+        "public accusation",
+        "a sacrificial demand",
+        "a vow of silence"
+      ],
+      discoveries: [
+        "a child\u2019s drawing",
+        "a diary page",
+        "a hidden bone charm",
+        "a blood-stained contract",
+        "a burial record",
+        "a sigil mark",
+        "a missing finger ring",
+        "a warding nail bundle",
+        "a locked music box",
+        "an old photograph",
+        "a stitched skin-map",
+        "a priest\u2019s confession",
+        "a hidden crawlspace",
+        "a name scratched into stone"
+      ]
+    },
+    mythic: {
+      palette: [
+        "star-forged",
+        "oracle-sung",
+        "storm-crowned",
+        "titan-buried",
+        "sun-bright",
+        "wyrm-scarred",
+        "ivory",
+        "thunderous",
+        "fate-bound",
+        "laurel-wreathed",
+        "bronze",
+        "celestial",
+        "echo-carved",
+        "sea-born",
+        "fire-kissed",
+        "golden",
+        "sky-sundered",
+        "dawn-lit",
+        "anthemic"
+      ],
+      factions: [
+        "a divine procession",
+        "a hero-cult",
+        "an oracle collegium",
+        "a city of bronze",
+        "a sacred league",
+        "a titan\u2019s descendants",
+        "a temple-guard phalanx",
+        "a poet-priest circle",
+        "a river-god shrine",
+        "a prophet\u2019s retinue",
+        "a champion\u2019s household",
+        "a monster-slayer oathband",
+        "a council of elders"
+      ],
+      foes: [
+        "myth-beasts",
+        "champions",
+        "vengeful spirits",
+        "harrowed giants",
+        "oathbreakers",
+        "sky-raiders",
+        "gorgon-blooded",
+        "lion-guardians",
+        "storm harpies",
+        "cursed demigods",
+        "serpent cultists",
+        "bronze automatons",
+        "underworld shades"
+      ],
+      places: [
+        "temple atop cliffs",
+        "arena of echoes",
+        "island of statues",
+        "cyclopean bridge",
+        "oracle cavern",
+        "sunken palace",
+        "labyrinth gates",
+        "mountain throne",
+        "river of reeds",
+        "bronze colonnade",
+        "underworld mouth",
+        "sky-pillar summit",
+        "sacred grove of laurels",
+        "volcanic forge-shrine"
+      ],
+      twists: [
+        "a prophecy is misread",
+        "the \u2018villain\u2019 fulfills fate",
+        "the gods are divided",
+        "a relic chooses its bearer",
+        "an oath binds the party",
+        "the monster is a test",
+        "the \u2018gift\u2019 is a geas",
+        "a sacrifice must be willing",
+        "a name is a key",
+        "victory triggers hubris",
+        "the crowd demands blood",
+        "the oracle speaks in riddles"
+      ],
+      hazards: [
+        "divine omens",
+        "storm-winds",
+        "labyrinthine halls",
+        "curse backlash",
+        "living stone",
+        "river of stars",
+        "burning sun glare",
+        "echoing chants",
+        "hostile constellations",
+        "sacred fire",
+        "jealous spirits",
+        "unstable altars",
+        "time-skips",
+        "titanic footsteps"
+      ],
+      socialStakes: [
+        "a sacred oath",
+        "a rite of kingship",
+        "a public trial by ordeal",
+        "a festival of masks",
+        "a supplication to the gods",
+        "a feud arbitration",
+        "a champion\u2019s duel",
+        "a pilgrimage vow",
+        "a sacrifice negotiation",
+        "a treaty under witness",
+        "a coronation scandal",
+        "a hero\u2019s fame",
+        "a temple censure",
+        "a divine verdict"
+      ],
+      discoveries: [
+        "a true-name fragment",
+        "a shattered relic",
+        "a hidden lineage",
+        "a forbidden hymn",
+        "a map of constellations",
+        "a sealed titan-sigil",
+        "a bloodline token",
+        "a prophecy tablet",
+        "a monster\u2019s weakness verse",
+        "an underworld toll",
+        "a god\u2019s favor mark",
+        "a stolen laurel",
+        "a bronze key",
+        "a sacred boundary stone"
+      ]
     },
     swashbuckling: {
-      palette: ["salt-kissed","sunlit","dashing","candlelit","scarlet","gilded","laughing","stormy","smoke-wreathed"],
-      factions: ["a privateer crew","a noble salon","a dockside union","a duelist school","a customs office","a masked society"],
-      foes: ["cutthroats","naval marines","rival captains","assassins","corsairs","mercenary duelists"],
-      places: ["harbor district","galleon deck","opera house","coastal fort","smuggler tunnels","moonlit promenade"],
-      twists: ["the treasure is a message","the ‘pirates’ are patriots","a betrayal is staged","the law is bought"],
-      hazards: ["burning rigging","rolling decks","powder smoke","crowded balconies","broken chandeliers","flooding holds"],
-      socialStakes: ["a duel of honor","a gala scandal","a hostage negotiation","a mutiny vote","a courtroom spectacle","a clandestine rendezvous"],
-      discoveries: ["a captain’s log","a coded sea chart","a forged letter of marque","a hidden hold","a stolen signet","a map to a safe harbor"]
+      palette: [
+        "salt-kissed",
+        "sunlit",
+        "dashing",
+        "candlelit",
+        "scarlet",
+        "gilded",
+        "laughing",
+        "stormy",
+        "smoke-wreathed",
+        "sea-sprayed",
+        "powder-scented",
+        "velvet",
+        "rope-worn",
+        "moon-bright",
+        "briny",
+        "sun-bleached",
+        "ink-stained",
+        "lively",
+        "sparking"
+      ],
+      factions: [
+        "a privateer crew",
+        "a noble salon",
+        "a dockside union",
+        "a duelist school",
+        "a customs office",
+        "a masked society",
+        "a shipping company",
+        "a naval command",
+        "a smuggler family",
+        "a lighthouse keepers\u2019 guild",
+        "a theater troupe",
+        "a revolutionary cell",
+        "a mercenary company"
+      ],
+      foes: [
+        "cutthroats",
+        "naval marines",
+        "rival captains",
+        "assassins",
+        "corsairs",
+        "mercenary duelists",
+        "harbor enforcers",
+        "press-gang crews",
+        "skyship raiders",
+        "sabre champions",
+        "arsonists",
+        "snipers",
+        "sea-monster hunters"
+      ],
+      places: [
+        "harbor district",
+        "galleon deck",
+        "opera house",
+        "coastal fort",
+        "smuggler tunnels",
+        "moonlit promenade",
+        "crowded tavern",
+        "shipyard cranes",
+        "clifftop lighthouse",
+        "ballroom balcony",
+        "canal bridge",
+        "customs warehouse",
+        "reef-strewn cove",
+        "prison hulk"
+      ],
+      twists: [
+        "the treasure is a message",
+        "the \u2018pirates\u2019 are patriots",
+        "a betrayal is staged",
+        "the law is bought",
+        "the captain is under a geas",
+        "the cargo is alive",
+        "the patron is the rival",
+        "the map is half-burned",
+        "the duel is a distraction",
+        "a storm is engineered",
+        "the ship is sabotaged",
+        "the \u2018villain\u2019 wants amnesty"
+      ],
+      hazards: [
+        "burning rigging",
+        "rolling decks",
+        "powder smoke",
+        "crowded balconies",
+        "broken chandeliers",
+        "flooding holds",
+        "slippery pier planks",
+        "crashing waves",
+        "sparking fireworks",
+        "falling crates",
+        "rope entanglement",
+        "cannon recoil",
+        "glass-strewn floors",
+        "shifting sandbars"
+      ],
+      socialStakes: [
+        "a duel of honor",
+        "a gala scandal",
+        "a hostage negotiation",
+        "a mutiny vote",
+        "a courtroom spectacle",
+        "a clandestine rendezvous",
+        "a letter of marque hearing",
+        "a captaincy election",
+        "a ransom deadline",
+        "a trade contract dispute",
+        "a public toast turned accusation",
+        "a wedding interruption",
+        "a navy inspection",
+        "a smugglers\u2019 pact"
+      ],
+      discoveries: [
+        "a captain\u2019s log",
+        "a coded sea chart",
+        "a forged letter of marque",
+        "a hidden hold",
+        "a stolen signet",
+        "a map to a safe harbor",
+        "a black spot token",
+        "a bribe ledger",
+        "a secret rendezvous flag",
+        "a counterfeit seal press",
+        "a stashed pistol cache",
+        "a lost love letter",
+        "a reef passage map",
+        "an encoded shanty verse"
+      ]
     },
     noir: {
-      palette: ["rain-slick","neon","smoke-stained","late-night","cut-glass","grimy","shadowed","whispered","wired"],
-      factions: ["a city precinct","a union hall","a nightclub syndicate","a charity front","a private firm","a street crew"],
-      foes: ["fixers","dirty cops","enforcers","blackmailers","arsonists","hired muscle"],
-      places: ["alleyway","speakeasy","tenement stair","bridge underpass","hotel lobby","records office"],
-      twists: ["the client is the culprit","the evidence was planted","the witness is paid off","the ‘missing’ chose to vanish"],
-      hazards: ["police pressure","media frenzy","tailing shadows","hidden cameras","burning files","time-sensitive leverage"],
-      socialStakes: ["a public hearing","a union vote","a courtroom ambush","a scandal leak","a backroom deal","a desperate plea"],
-      discoveries: ["a torn photo","a wiretap log","a hidden key","a ledger of payoffs","a matchbook clue","a safe deposit receipt"]
+      palette: [
+        "rain-slick",
+        "neon",
+        "smoke-stained",
+        "late-night",
+        "cut-glass",
+        "grimy",
+        "shadowed",
+        "whispered",
+        "wired",
+        "coal-dark",
+        "streetlamp",
+        "foggy",
+        "cigarette-burned",
+        "chrome",
+        "slick",
+        "ink-black",
+        "humming",
+        "cold",
+        "static"
+      ],
+      factions: [
+        "a city precinct",
+        "a union hall",
+        "a nightclub syndicate",
+        "a charity front",
+        "a private firm",
+        "a street crew",
+        "a newspaper desk",
+        "a courthouse clerk ring",
+        "a dock cartel",
+        "a fixer network",
+        "a political machine",
+        "a loan shark circle",
+        "a community watch"
+      ],
+      foes: [
+        "fixers",
+        "dirty cops",
+        "enforcers",
+        "blackmailers",
+        "arsonists",
+        "hired muscle",
+        "private eyes",
+        "corrupt judges",
+        "strikebreakers",
+        "snitches",
+        "snipers",
+        "gang lieutenants",
+        "paper-pushers with power"
+      ],
+      places: [
+        "alleyway",
+        "speakeasy",
+        "tenement stair",
+        "bridge underpass",
+        "hotel lobby",
+        "records office",
+        "morgue",
+        "train platform",
+        "warehouse row",
+        "rooftop water tower",
+        "late-night diner",
+        "court hallway",
+        "print shop",
+        "parking garage"
+      ],
+      twists: [
+        "the client is the culprit",
+        "the evidence was planted",
+        "the witness is paid off",
+        "the \u2018missing\u2019 chose to vanish",
+        "the alibi is staged",
+        "the tape is edited",
+        "the payoff trail loops back",
+        "the \u2018hero\u2019 is on payroll",
+        "a loved one is leverage",
+        "the case is a distraction",
+        "the files are swapped",
+        "the confession is coerced"
+      ],
+      hazards: [
+        "police pressure",
+        "media frenzy",
+        "tailing shadows",
+        "hidden cameras",
+        "burning files",
+        "time-sensitive leverage",
+        "hostile informants",
+        "wiretaps",
+        "riot police",
+        "power outage",
+        "locked doors",
+        "false tips",
+        "booby-trapped evidence",
+        "street sweeps"
+      ],
+      socialStakes: [
+        "a public hearing",
+        "a union vote",
+        "a courtroom ambush",
+        "a scandal leak",
+        "a backroom deal",
+        "a desperate plea",
+        "a mayoral endorsement",
+        "a witness protection offer",
+        "a parole hearing",
+        "a settlement negotiation",
+        "a press conference",
+        "a boardroom ultimatum",
+        "a community revolt",
+        "a payout deadline"
+      ],
+      discoveries: [
+        "a torn photo",
+        "a wiretap log",
+        "a hidden key",
+        "a ledger of payoffs",
+        "a matchbook clue",
+        "a safe deposit receipt",
+        "a burned address book",
+        "a coded voicemail",
+        "a stamped ticket stub",
+        "a fake ID kit",
+        "a hotel registry page",
+        "a bloodied cufflink",
+        "a rolled blueprint",
+        "a misfiled warrant"
+      ]
     },
     desert: {
-      palette: ["sun-blasted","dust-choked","glass-sanded","mirage-bright","salt-crusted","ashen","wind-howled","copper","bleached"],
-      factions: ["a caravan guild","a water-keeper cult","a dune tribe","a desert kingdom envoy","a tomb-warden circle","a spice cartel"],
-      foes: ["raiders","sand-stalkers","cursed dead","scorpion riders","mercenary scouts","zealots"],
-      places: ["oasis town","buried temple","salt flat road","ruined aqueduct","black glass canyon","storm-worn ziggurat"],
-      twists: ["the water is poisoned","the map is wrong on purpose","the ‘ruin’ is inhabited","the relic is a prison"],
-      hazards: ["sandstorm","heat exhaustion","sinkholes","scarce water","razor glass","night-cold exposure"],
-      socialStakes: ["water rights dispute","caravan contract","tribal oath","tomb access negotiation","price war","hostage bargain"],
-      discoveries: ["a hidden cistern","a starmap slab","a smuggler waypoint","an old royal seal","a buried war banner","a jar of cursed sand"]
+      palette: [
+        "sun-blasted",
+        "dust-choked",
+        "glass-sanded",
+        "mirage-bright",
+        "salt-crusted",
+        "ashen",
+        "wind-howled",
+        "copper",
+        "bleached",
+        "scorched",
+        "dune-gold",
+        "heat-hazed",
+        "saffron",
+        "cracked",
+        "sun-bleached",
+        "sirocco",
+        "stone-dry",
+        "rust-red",
+        "star-cold"
+      ],
+      factions: [
+        "a caravan guild",
+        "a water-keeper cult",
+        "a dune tribe",
+        "a desert kingdom envoy",
+        "a tomb-warden circle",
+        "a spice cartel",
+        "an oasis council",
+        "a sandship crew",
+        "a relic-hunter company",
+        "a salt-miners\u2019 union",
+        "a storm-priesthood",
+        "a border fort garrison",
+        "a smuggler ring"
+      ],
+      foes: [
+        "raiders",
+        "sand-stalkers",
+        "cursed dead",
+        "scorpion riders",
+        "mercenary scouts",
+        "zealots",
+        "jackal cultists",
+        "glass wyrmlings",
+        "oasis extortionists",
+        "gnoll packs",
+        "burrowing horrors",
+        "sun-maddened pilgrims",
+        "tomb guardians"
+      ],
+      places: [
+        "oasis town",
+        "buried temple",
+        "salt flat road",
+        "ruined aqueduct",
+        "black glass canyon",
+        "storm-worn ziggurat",
+        "bone-dune field",
+        "sunken caravanserai",
+        "collapsed cistern",
+        "wind-carved arch",
+        "saffron market",
+        "nomad encampment",
+        "forgotten observatory",
+        "tomb staircase"
+      ],
+      twists: [
+        "the water is poisoned",
+        "the map is wrong on purpose",
+        "the \u2018ruin\u2019 is inhabited",
+        "the relic is a prison",
+        "the guide is bribed",
+        "the oasis is bait",
+        "the caravan is a cover job",
+        "the storm follows you",
+        "the \u2018curse\u2019 is a disease",
+        "the relic is counterfeit",
+        "the tomb is a city gate",
+        "the tribe has a claim"
+      ],
+      hazards: [
+        "sandstorm",
+        "heat exhaustion",
+        "sinkholes",
+        "scarce water",
+        "razor glass",
+        "night-cold exposure",
+        "blinding sun glare",
+        "quicksand",
+        "salt burns",
+        "camel stampede",
+        "shifting dunes",
+        "scorpion nests",
+        "flash flood wadi",
+        "toxic dust"
+      ],
+      socialStakes: [
+        "water rights dispute",
+        "caravan contract",
+        "tribal oath",
+        "tomb access negotiation",
+        "price war",
+        "hostage bargain",
+        "oasis election",
+        "tribute demand",
+        "salt tax revolt",
+        "priestly decree",
+        "marriage alliance",
+        "trial by sun",
+        "border permit",
+        "relic ownership claim"
+      ],
+      discoveries: [
+        "a hidden cistern",
+        "a starmap slab",
+        "a smuggler waypoint",
+        "an old royal seal",
+        "a buried war banner",
+        "a jar of cursed sand",
+        "a sandship manifest",
+        "a tomb-warden token",
+        "a shattered compass",
+        "a secret well shaft",
+        "a forged permit",
+        "a relic shard",
+        "a bloodstained scarf",
+        "a map under wax"
+      ]
     },
     planar: {
-      palette: ["impossible","prismatic","echoing","gravity-wrong","mirror-bright","ink-black","humming","fractured","luminous"],
-      factions: ["a planar embassy","a cult of thresholds","a gatekeeper order","a dream-cartographer guild","a scholar cabal","a wandering court"],
-      foes: ["outsiders","echo-things","dream predators","void mercenaries","mirror doubles","law-spirits"],
-      places: ["gatehouse","floating market","infinite stair","mirrored hall","a city in a bottle","storm of paper lanterns"],
-      twists: ["the plane is negotiating","your memories are currency","time loops locally","the ‘map’ is alive"],
-      hazards: ["reality shear","memory drain","gravity shifts","language breaks","contract spirits","wrong-door syndrome"],
-      socialStakes: ["a binding contract","a treaty of passage","a debt claimed","a true-name dispute","an extradition demand","a public paradox trial"],
-      discoveries: ["a gate-key","a true-name shard","a stitched map","a bottled message","a forbidden sigil","a debt ledger of souls"]
+      palette: [
+        "impossible",
+        "prismatic",
+        "echoing",
+        "gravity-wrong",
+        "mirror-bright",
+        "ink-black",
+        "humming",
+        "fractured",
+        "luminous",
+        "iridescent",
+        "weightless",
+        "time-warped",
+        "glass-clear",
+        "dreamlike",
+        "static",
+        "void-touched",
+        "hyperreal",
+        "folded",
+        "singing"
+      ],
+      factions: [
+        "a planar embassy",
+        "a cult of thresholds",
+        "a gatekeeper order",
+        "a dream-cartographer guild",
+        "a scholar cabal",
+        "a wandering court",
+        "a contract devils\u2019 bureau",
+        "a mirror-merchant caravan",
+        "a sanctuary of exiles",
+        "a reality-stitcher workshop",
+        "a tribunal of laws",
+        "a choir of names",
+        "a paradox cult"
+      ],
+      foes: [
+        "outsiders",
+        "echo-things",
+        "dream predators",
+        "void mercenaries",
+        "mirror doubles",
+        "law-spirits",
+        "contract collectors",
+        "memory leeches",
+        "time-wraiths",
+        "paper golems",
+        "horizon hunters",
+        "false angels",
+        "fracture beasts"
+      ],
+      places: [
+        "gatehouse",
+        "floating market",
+        "infinite stair",
+        "mirrored hall",
+        "a city in a bottle",
+        "storm of paper lanterns",
+        "gravity garden",
+        "library of doors",
+        "river of light",
+        "clockwork plaza",
+        "dream clinic",
+        "suspended courthouse",
+        "the soundless pier",
+        "maze of reflections"
+      ],
+      twists: [
+        "the plane is negotiating",
+        "your memories are currency",
+        "time loops locally",
+        "the \u2018map\u2019 is alive",
+        "the gate changes destination",
+        "the contract is retroactive",
+        "names are stolen",
+        "truth is illegal here",
+        "the \u2018enemy\u2019 is you-from-later",
+        "the exit requires a price",
+        "help causes paradox",
+        "the embassy is a prison"
+      ],
+      hazards: [
+        "reality shear",
+        "memory drain",
+        "gravity shifts",
+        "language breaks",
+        "contract spirits",
+        "wrong-door syndrome",
+        "looping corridors",
+        "sensory overload",
+        "time dilation",
+        "paper cuts that bleed ink",
+        "identity drift",
+        "void exposure",
+        "mirror traps",
+        "compulsive bargains"
+      ],
+      socialStakes: [
+        "a binding contract",
+        "a treaty of passage",
+        "a debt claimed",
+        "a true-name dispute",
+        "an extradition demand",
+        "a public paradox trial",
+        "passport validation",
+        "oath enforcement",
+        "a name auction",
+        "a sanctuary hearing",
+        "a tribunal ruling",
+        "a debt forgiveness petition",
+        "a gate quarantine",
+        "a custody of memories case"
+      ],
+      discoveries: [
+        "a gate-key",
+        "a true-name shard",
+        "a stitched map",
+        "a bottled message",
+        "a forbidden sigil",
+        "a debt ledger of souls",
+        "a memory vial",
+        "a counterfeit passport",
+        "a door-address rune",
+        "a paradox note",
+        "a mirror coin",
+        "a law-seal stamp",
+        "a captured echo",
+        "a folded star-chart"
+      ]
     },
     steampunk: {
-      palette: ["brass","soot-streaked","clockwork","steam-hazed","riveted","lacquered","spark-lit","iron","mechanical"],
-      factions: ["an inventor’s guild","a rail barony","a newspaper syndicate","a street mechanic union","a skyship fleet","a ministry bureau"],
-      foes: ["saboteurs","strikebreakers","automatons","private guards","spy-runners","airship raiders"],
-      places: ["gearworks","rail station","foundry district","sky-dock","undercity tunnels","exhibition hall"],
-      twists: ["the machine is sentient","the patent is stolen","the ‘accident’ is planned","the fuel supply is cursed"],
-      hazards: ["pressure bursts","sparking arcs","moving machinery","toxic smoke","runaway carts","structural vibration"],
-      socialStakes: ["a public demonstration","a labor strike","a patent hearing","a sabotage trial","a guild election","a rail contract dispute"],
-      discoveries: ["a coded blueprint","a hidden gear-key","a forged stamp","a smuggled component","a blackmail photo","a secret workshop"]
+      palette: [
+        "brass",
+        "soot-streaked",
+        "clockwork",
+        "steam-hazed",
+        "riveted",
+        "lacquered",
+        "spark-lit",
+        "iron",
+        "mechanical",
+        "oil-sheened",
+        "copper",
+        "gear-worn",
+        "smokestack",
+        "polished",
+        "patinaed",
+        "whistling",
+        "tram-lit",
+        "bolt-fastened",
+        "tarnished"
+      ],
+      factions: [
+        "an inventor\u2019s guild",
+        "a rail barony",
+        "a newspaper syndicate",
+        "a street mechanic union",
+        "a skyship fleet",
+        "a ministry bureau",
+        "a patent office clique",
+        "a factory owners\u2019 council",
+        "a boiler inspectors\u2019 corps",
+        "an aeronaut club",
+        "a covert telegram ring",
+        "a salvage company",
+        "a clockmaker cabal"
+      ],
+      foes: [
+        "saboteurs",
+        "strikebreakers",
+        "automatons",
+        "private guards",
+        "spy-runners",
+        "airship raiders",
+        "clockwork beasts",
+        "gas-mask troops",
+        "industrial thugs",
+        "union enforcers",
+        "arsonists",
+        "prototype hunters",
+        "rail brigands"
+      ],
+      places: [
+        "gearworks",
+        "rail station",
+        "foundry district",
+        "sky-dock",
+        "undercity tunnels",
+        "exhibition hall",
+        "telegraph exchange",
+        "boiler room",
+        "tram depot",
+        "airship hangar",
+        "smokehouse alley",
+        "canal lock",
+        "patent court",
+        "museum of curiosities"
+      ],
+      twists: [
+        "the machine is sentient",
+        "the patent is stolen",
+        "the \u2018accident\u2019 is planned",
+        "the fuel supply is cursed",
+        "the demonstration is sabotage",
+        "a rival built a copy",
+        "the inspector is bribed",
+        "the blueprint is a fake",
+        "the automaton remembers",
+        "the rail line is booby-trapped",
+        "the guild is divided",
+        "the \u2018upgrade\u2019 is dangerous"
+      ],
+      hazards: [
+        "pressure bursts",
+        "sparking arcs",
+        "moving machinery",
+        "toxic smoke",
+        "runaway carts",
+        "structural vibration",
+        "steam scalding jets",
+        "gear-crush zones",
+        "oil-slick floors",
+        "collapsing gantries",
+        "gas leaks",
+        "magnetized debris",
+        "exploding boilers",
+        "falling chain blocks"
+      ],
+      socialStakes: [
+        "a public demonstration",
+        "a labor strike",
+        "a patent hearing",
+        "a sabotage trial",
+        "a guild election",
+        "a rail contract dispute",
+        "a press expos\u00e9",
+        "a factory shutdown order",
+        "a skyship race wager",
+        "a union negotiation",
+        "a ministerial inquiry",
+        "a licensing bribe",
+        "a safety inspection",
+        "a salvage rights dispute"
+      ],
+      discoveries: [
+        "a coded blueprint",
+        "a hidden gear-key",
+        "a forged stamp",
+        "a smuggled component",
+        "a blackmail photo",
+        "a secret workshop",
+        "a telegram intercept",
+        "a counterfeit patent",
+        "an experimental fuel vial",
+        "a sabotage tool kit",
+        "a missing bolt batch",
+        "a ledger of bribes",
+        "a concealed hatch",
+        "a clockwork core"
+      ]
     },
     cyberpunk: {
-      palette: ["neon","chrome","glitching","rainy","holo-lit","wired","synthetic","siren-bright","back-alley"],
-      factions: ["a megacorp division","a street gang","a netrunner crew","a union collective","a private security firm","an activist cell"],
-      foes: ["hit-squads","drones","corporate agents","cyber-assassins","augmented bruisers","data-thieves"],
-      places: ["arcology lobby","server farm","night market","rooftop garden","metro tunnel","clinic backroom"],
-      twists: ["the target is an AI","the job is a setup","the data is someone’s memories","the ‘fixer’ works for the corp"],
-      hazards: ["camera nets","ICE firewalls","crowded choke points","EMP risk","toxic runoff","hostile PR narrative"],
-      socialStakes: ["board vote","broadcast exposé","union negotiation","hostage livestream","trial of public opinion","blackmail drop"],
-      discoveries: ["a deadman switch","a private key shard","a hidden implant","a secret contract","a payment trail","a vault location"]
+      palette: [
+        "neon",
+        "chrome",
+        "glitching",
+        "rainy",
+        "holo-lit",
+        "wired",
+        "synthetic",
+        "siren-bright",
+        "back-alley",
+        "ultraviolet",
+        "laser-lit",
+        "pixelated",
+        "static",
+        "slick",
+        "acid-bright",
+        "carbon",
+        "cold",
+        "datasmoke",
+        "overclocked"
+      ],
+      factions: [
+        "a megacorp division",
+        "a street gang",
+        "a netrunner crew",
+        "a union collective",
+        "a private security firm",
+        "an activist cell",
+        "a biotech clinic chain",
+        "a media influencer ring",
+        "a black market broker",
+        "a city AI office",
+        "a courier collective",
+        "a syndicate family",
+        "a hacker commune",
+        "a VR church"
+      ],
+      foes: [
+        "hit-squads",
+        "drones",
+        "corporate agents",
+        "cyber-assassins",
+        "augmented bruisers",
+        "data-thieves",
+        "ICE demons",
+        "security mechs",
+        "riot cops",
+        "bio-mod addicts",
+        "sniper teams",
+        "deepfake scammers",
+        "contract killers",
+        "sleeper agents"
+      ],
+      places: [
+        "arcology lobby",
+        "server farm",
+        "night market",
+        "rooftop garden",
+        "metro tunnel",
+        "clinic backroom",
+        "data center sublevel",
+        "holo-club",
+        "abandoned mall",
+        "drone port",
+        "underpass bazaar",
+        "penthouse safehouse",
+        "maintenance shaft",
+        "broadcast studio"
+      ],
+      twists: [
+        "the target is an AI",
+        "the job is a setup",
+        "the data is someone\u2019s memories",
+        "the \u2018fixer\u2019 works for the corp",
+        "the client is a deepfake",
+        "the key is a person",
+        "the payoff is poisoned",
+        "the cops are paid",
+        "the leak is intentional",
+        "the vault is empty",
+        "the implant is a tracker",
+        "the \u2018victim\u2019 consented"
+      ],
+      hazards: [
+        "camera nets",
+        "ICE firewalls",
+        "crowded choke points",
+        "EMP risk",
+        "toxic runoff",
+        "hostile PR narrative",
+        "signal jamming",
+        "facial-recognition sweeps",
+        "drone patrols",
+        "data corruption",
+        "power brownouts",
+        "sudden lockdown",
+        "biohazard spill",
+        "smart-door traps"
+      ],
+      socialStakes: [
+        "board vote",
+        "broadcast expos\u00e9",
+        "union negotiation",
+        "hostage livestream",
+        "trial of public opinion",
+        "blackmail drop",
+        "regulatory hearing",
+        "street protest",
+        "media takedown",
+        "corporate acquisition",
+        "whistleblower extraction",
+        "community referendum",
+        "gang truce meeting",
+        "clinic shutdown order"
+      ],
+      discoveries: [
+        "a deadman switch",
+        "a private key shard",
+        "a hidden implant",
+        "a secret contract",
+        "a payment trail",
+        "a vault location",
+        "a burner phone cache",
+        "a backdoor account",
+        "a falsified identity",
+        "a blackmail file",
+        "a lab sample",
+        "a drone flight log",
+        "a server access badge",
+        "a memory fragment"
+      ]
     },
     scifi: {
-      palette: ["sterile","starlit","ion-bright","dusty","humming","cold","radiant","silent","sealed"],
-      factions: ["a research directorate","a colonial council","a salvage crew","a religious order","a trade convoy","a security detachment"],
-      foes: ["pirates","rogue marines","alien fauna","nanite swarms","synthetics","cult extremists"],
-      places: ["orbital station","terraform outpost","derelict ship","cargo ring","ice moon vault","communications array"],
-      twists: ["the signal is a lure","the ‘artifact’ is a warning","someone is a clone","the station is quarantined"],
-      hazards: ["decompression risk","radiation leaks","power failure","hostile gravity","sealed bulkheads","oxygen timer"],
-      socialStakes: ["quarantine vote","evacuation priority","jurisdiction dispute","mutiny hearing","diplomatic contact","resource allocation"],
-      discoveries: ["a corrupted log","a hidden compartment","a strange biomarker","a star map","a falsified report","a second transmitter"]
+      palette: [
+        "sterile",
+        "starlit",
+        "ion-bright",
+        "dusty",
+        "humming",
+        "cold",
+        "radiant",
+        "silent",
+        "sealed",
+        "vacuum-dry",
+        "hydroponic",
+        "ceramic",
+        "laser-scorched",
+        "gravity-light",
+        "horizon-blue",
+        "cryogenic",
+        "metallic",
+        "antimatter",
+        "signal-faint"
+      ],
+      factions: [
+        "a research directorate",
+        "a colonial council",
+        "a salvage crew",
+        "a religious order",
+        "a trade convoy",
+        "a security detachment",
+        "a terraforming guild",
+        "a medical quarantine board",
+        "an AI oversight committee",
+        "a mining consortium",
+        "a diplomatic mission",
+        "a frontier militia",
+        "a smuggler flotilla"
+      ],
+      foes: [
+        "pirates",
+        "rogue marines",
+        "alien fauna",
+        "nanite swarms",
+        "synthetics",
+        "cult extremists",
+        "corporate raiders",
+        "mutineers",
+        "boarding parties",
+        "bioengineered beasts",
+        "security drones",
+        "void cultists",
+        "saboteur teams"
+      ],
+      places: [
+        "orbital station",
+        "terraform outpost",
+        "derelict ship",
+        "cargo ring",
+        "ice moon vault",
+        "communications array",
+        "asteroid mine",
+        "generation ship corridor",
+        "research lab",
+        "hangar bay",
+        "hydroponics dome",
+        "crashed lander",
+        "beacon tower",
+        "quantum relay room"
+      ],
+      twists: [
+        "the signal is a lure",
+        "the \u2018artifact\u2019 is a warning",
+        "someone is a clone",
+        "the station is quarantined",
+        "the logs are doctored",
+        "the AI is protecting someone",
+        "the crew is missing time",
+        "the cargo is sentient",
+        "the threat is internal",
+        "the rescue is a trap",
+        "the map is wrong in 3D",
+        "the mission is classified"
+      ],
+      hazards: [
+        "decompression risk",
+        "radiation leaks",
+        "power failure",
+        "hostile gravity",
+        "sealed bulkheads",
+        "oxygen timer",
+        "micrometeor showers",
+        "electrical arcs",
+        "nanite contamination",
+        "biohazard quarantine",
+        "zero-g disorientation",
+        "reactor heat",
+        "security lockdown",
+        "hull breach domino"
+      ],
+      socialStakes: [
+        "quarantine vote",
+        "evacuation priority",
+        "jurisdiction dispute",
+        "mutiny hearing",
+        "diplomatic contact",
+        "resource allocation",
+        "salvage rights court",
+        "airlock protocol dispute",
+        "command succession",
+        "trade embargo",
+        "scientific ethics tribunal",
+        "panic announcement",
+        "refugee docking permit",
+        "AI personhood petition"
+      ],
+      discoveries: [
+        "a corrupted log",
+        "a hidden compartment",
+        "a strange biomarker",
+        "a star map",
+        "a falsified report",
+        "a second transmitter",
+        "a black box recording",
+        "a secret cargo manifest",
+        "a cloned ID tag",
+        "an encrypted distress ping",
+        "a smuggler beacon",
+        "a lab anomaly sample",
+        "a missing crew roster",
+        "a maintenance override chip"
+      ]
+    }
+  };
+
+  // -----------------------
+  // Custom Themes (LocalStorage)
+  // -----------------------
+  const CUSTOM_THEME_KEY = "ace_custom_themes_v1";
+
+  // shape:
+  // {
+  //   "<themeKey>": { label: "Display Name", lex: { palette:[], factions:[], ... } }
+  // }
+  let customThemes = {};
+
+  const THEME_CATS = ["palette","factions","foes","places","twists","hazards","socialStakes","discoveries"];
+
+  function normKey(s){
+    return String(s || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+  }
+
+  function loadCustomThemes(){
+    try{
+      const raw = localStorage.getItem(CUSTOM_THEME_KEY);
+      if (!raw) return;
+      const obj = JSON.parse(raw);
+      if (obj && typeof obj === "object") customThemes = obj;
+    }catch(e){
+      customThemes = {};
+    }
+  }
+
+  function saveCustomThemes(){
+    localStorage.setItem(CUSTOM_THEME_KEY, JSON.stringify(customThemes));
+  }
+
+  function mergeThemes(){
+    // Merge custom themes into themeLex (runtime only)
+    for (const [k, v] of Object.entries(customThemes)){
+      if (!v || !v.lex) continue;
+      const lex = v.lex;
+      // Ensure all categories exist
+      for (const c of THEME_CATS){
+        if (!Array.isArray(lex[c])) lex[c] = [];
+      }
+      themeLex[k] = lex;
+    }
+  }
+
+  function getThemeLabel(key){
+    // Built-in labels are derived from the select options; custom uses saved label or key.
+    const opt = [...$("#deckTheme").options].find(o => o.value === key);
+    if (opt) return opt.textContent;
+    const c = customThemes[key];
+    return (c && c.label) ? c.label : key;
+  }
+
+  function rebuildThemeSelects(){
+    // rebuild deckTheme options with built-in + custom
+    const deckSel = $("#deckTheme");
+    const current = deckSel.value;
+
+    // collect built-in options once (from DOM at boot)
+    if (!rebuildThemeSelects._builtIn){
+      rebuildThemeSelects._builtIn = [...deckSel.options].map(o => ({value:o.value, label:o.textContent}));
+    }
+    const built = rebuildThemeSelects._builtIn;
+
+    deckSel.innerHTML = "";
+    for (const o of built){
+      const opt = document.createElement("option");
+      opt.value = o.value;
+      opt.textContent = o.label;
+      deckSel.appendChild(opt);
     }
 
-  
-  };
+    const customKeys = Object.keys(customThemes).sort((a,b) => a.localeCompare(b));
+    if (customKeys.length){
+      const sep = document.createElement("option");
+      sep.disabled = true;
+      sep.textContent = "──────────";
+      deckSel.appendChild(sep);
+      for (const k of customKeys){
+        const opt = document.createElement("option");
+        opt.value = k;
+        opt.textContent = customThemes[k].label || k;
+        deckSel.appendChild(opt);
+      }
+    }
+
+    // restore previous if possible
+    const exists = [...deckSel.options].some(o => o.value === current);
+    deckSel.value = exists ? current : (built[0]?.value || "fantasy");
+
+    // Editor theme select
+    const editSel = $("#editThemeSelect");
+    const prevEdit = editSel.value;
+    editSel.innerHTML = "";
+
+    const grpBuilt = document.createElement("optgroup");
+    grpBuilt.label = "Built-in";
+    for (const o of built){
+      const opt = document.createElement("option");
+      opt.value = o.value;
+      opt.textContent = o.label;
+      grpBuilt.appendChild(opt);
+    }
+    editSel.appendChild(grpBuilt);
+
+    const grpCustom = document.createElement("optgroup");
+    grpCustom.label = "Custom";
+    if (customKeys.length){
+      for (const k of customKeys){
+        const opt = document.createElement("option");
+        opt.value = k;
+        opt.textContent = customThemes[k].label || k;
+        grpCustom.appendChild(opt);
+      }
+    }else{
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "— none yet —";
+      opt.disabled = true;
+      grpCustom.appendChild(opt);
+    }
+    editSel.appendChild(grpCustom);
+
+    // restore selection where possible
+    const ok = [...editSel.options].some(o => o.value === prevEdit);
+    editSel.value = ok ? prevEdit : (built[0]?.value || "fantasy");
+
+    renderThemeEntryList();
+  }
+
+  function getEditableLex(themeKey){
+    // Return reference to custom lex if custom; for built-in, create a shadow editable custom theme
+    if (customThemes[themeKey]) return customThemes[themeKey].lex;
+
+    // create shadow custom copy (so users can tweak built-ins without editing source)
+    const clone = JSON.parse(JSON.stringify(themeLex[themeKey] || {}));
+    const label = getThemeLabel(themeKey);
+    customThemes[themeKey] = { label: `${label} (Custom)`, lex: clone };
+    saveCustomThemes();
+    mergeThemes();
+    rebuildThemeSelects();
+    return customThemes[themeKey].lex;
+  }
+
+  function renderThemeEntryList(){
+    const themeKey = $("#editThemeSelect").value;
+    const cat = $("#editThemeCategory").value;
+    const list = $("#themeEntryList");
+    if (!list) return;
+
+    // Determine source: custom if exists, else show built-in read-only
+    const isCustom = !!customThemes[themeKey];
+    const lex = isCustom ? (customThemes[themeKey].lex || {}) : (themeLex[themeKey] || {});
+    const arr = Array.isArray(lex[cat]) ? lex[cat] : [];
+    list.innerHTML = "";
+
+    if (!arr.length){
+      const empty = document.createElement("div");
+      empty.className = "mono";
+      empty.style.opacity = ".9";
+      empty.textContent = isCustom ? "No entries yet. Add some on the right." : "No entries found for this category.";
+      list.appendChild(empty);
+      return;
+    }
+
+    arr.forEach((txt, idx) => {
+      const row = document.createElement("div");
+      row.className = "li";
+      row.innerHTML = `
+        <div class="txt">${escapeHTML(txt)}</div>
+        <div class="acts">
+          <button class="miniBtn tiny" data-act="edit" data-i="${idx}" ${isCustom ? "" : "disabled"}>Edit</button>
+          <button class="miniBtn tiny danger" data-act="del" data-i="${idx}" ${isCustom ? "" : "disabled"}>Del</button>
+        </div>
+      `;
+      list.appendChild(row);
+    });
+
+    list.querySelectorAll("button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const act = btn.dataset.act;
+        const i = +btn.dataset.i;
+        if (!customThemes[themeKey]) return;
+        const lex = customThemes[themeKey].lex;
+        const arr = lex[cat] || (lex[cat] = []);
+        if (act === "edit"){
+          const next = prompt("Edit entry:", arr[i]);
+          if (next == null) return;
+          const v = String(next).trim();
+          if (!v) return;
+          arr[i] = v;
+          saveCustomThemes();
+          mergeThemes();
+          renderThemeEntryList();
+        }
+        if (act === "del"){
+          if (!confirm("Delete this entry?")) return;
+          arr.splice(i,1);
+          saveCustomThemes();
+          mergeThemes();
+          renderThemeEntryList();
+        }
+      });
+    });
+  }
+
+  function addEntries(){
+    const themeKey = $("#editThemeSelect").value;
+    const cat = $("#editThemeCategory").value;
+    const raw = $("#editThemeEntry").value || "";
+    const lines = raw.split("\n").map(s => s.trim()).filter(Boolean);
+    if (!lines.length) return toast("No entries");
+
+    const lex = getEditableLex(themeKey);
+    lex[cat] = Array.isArray(lex[cat]) ? lex[cat] : [];
+    const existing = new Set(lex[cat].map(s => String(s).trim().toLowerCase()));
+    for (const l of lines){
+      const key = l.toLowerCase();
+      if (!existing.has(key)){
+        lex[cat].push(l);
+        existing.add(key);
+      }
+    }
+
+    $("#editThemeEntry").value = "";
+    saveCustomThemes();
+    mergeThemes();
+    rebuildThemeSelects();
+    toast("Added");
+  }
+
+  function createNewThemeIfRequested(){
+    const keyRaw = $("#newThemeKey").value;
+    const labelRaw = $("#newThemeLabel").value;
+    const key = normKey(keyRaw);
+    const label = String(labelRaw || "").trim();
+
+    if (!key) return null;
+    if (themeLex[key] && !customThemes[key]){
+      // Key collides with built-in; make it clearly custom
+      const alt = normKey(key + "_custom");
+      if (!alt) return null;
+      if (!customThemes[alt]){
+        customThemes[alt] = { label: label || (alt), lex: { } };
+      }
+      return alt;
+    }
+    if (!customThemes[key]){
+      customThemes[key] = { label: label || key, lex: {} };
+    }else{
+      if (label) customThemes[key].label = label;
+    }
+    for (const c of THEME_CATS){
+      if (!Array.isArray(customThemes[key].lex[c])) customThemes[key].lex[c] = [];
+    }
+
+    $("#newThemeKey").value = "";
+    $("#newThemeLabel").value = "";
+    saveCustomThemes();
+    mergeThemes();
+    rebuildThemeSelects();
+    $("#editThemeSelect").value = key;
+    renderThemeEntryList();
+    toast("Theme ready");
+    return key;
+  }
+
+  function deleteSelectedCustomTheme(){
+    const themeKey = $("#editThemeSelect").value;
+    if (!customThemes[themeKey]){
+      toast("Built-in theme");
+      return;
+    }
+    if (!confirm(`Delete custom theme "${customThemes[themeKey].label || themeKey}"? This cannot be undone.`)) return;
+    delete customThemes[themeKey];
+    saveCustomThemes();
+    // Rebuild themeLex by reloading page state: simplest is to refresh (but we can just remove key)
+    // Remove from runtime themeLex if it was only custom
+    // (If it shadowed a built-in, keep the built-in values as-is; we can't restore without reload, so we keep the merged copy.)
+    // Best effort: if built-in exists, keep it; else delete.
+    if (!rebuildThemeSelects._builtIn?.some(o => o.value === themeKey)){
+      delete themeLex[themeKey];
+    }
+    rebuildThemeSelects();
+    toast("Theme deleted");
+  }
+
+  function exportCustomThemes(){
+    const data = JSON.stringify(customThemes, null, 2);
+    const blob = new Blob([data], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "arcane_card_engine_custom_themes.json";
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 1500);
+  }
+
+  function persistEditorThemeLabel(){
+    const themeKey = $("#editThemeSelect").value;
+    if (!customThemes[themeKey]) return;
+    const label = String($("#newThemeLabel").value || "").trim();
+    if (!label) return;
+    customThemes[themeKey].label = label;
+    $("#newThemeLabel").value = "";
+    saveCustomThemes();
+    rebuildThemeSelects();
+    toast("Saved");
+  }
+
+
+
 
   
   // -----------------------
@@ -1408,7 +3370,6 @@ Theme: ${escapeHTML(summary.theme.toUpperCase())} · Tier: ${escapeHTML(summary.
     }
 
     $("#btnCopyAll").disabled = false;
-    $("#btnExportCard").disabled = false;
     $("#btnExportJSON").disabled = false;
     $("#btnRedrawMinor").disabled = false;
     $("#btnEscalate").disabled = false;
@@ -2003,11 +3964,6 @@ Theme: ${escapeHTML(summary.theme.toUpperCase())} · Tier: ${escapeHTML(summary.
     toast("JSON copied");
   });
 
-  $("#btnExportCard").addEventListener("click", () => {
-    if (!state.current) return;
-    exportCardPNG(state.current);
-  });
-
   $("#btnSave").addEventListener("click", () => {
     if (!state.current) return;
     state.log.push(state.current);
@@ -2049,7 +4005,6 @@ Theme: ${escapeHTML(summary.theme.toUpperCase())} · Tier: ${escapeHTML(summary.
   // -----------------------
   function setButtonsEnabled(hasDraw){
     $("#btnCopyAll").disabled = !hasDraw;
-    $("#btnExportCard").disabled = !hasDraw;
     $("#btnExportJSON").disabled = !hasDraw;
     $("#btnRedrawMinor").disabled = !hasDraw;
     $("#btnEscalate").disabled = !hasDraw;
@@ -2091,6 +4046,66 @@ if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c"){
   // -----------------------
   // Init
   // -----------------------
+
+  // Custom theme editor init
+  loadCustomThemes();
+  mergeThemes();
+  rebuildThemeSelects();
+
+  const _renderThemeEntryList = () => renderThemeEntryList();
+  $("#editThemeSelect")?.addEventListener("change", _renderThemeEntryList);
+  $("#editThemeCategory")?.addEventListener("change", _renderThemeEntryList);
+  $("#btnAddEntry")?.addEventListener("click", addEntries);
+  $("#btnDeleteTheme")?.addEventListener("click", deleteSelectedCustomTheme);
+  $("#btnThemeExport")?.addEventListener("click", exportCustomThemes);
+  $("#btnThemeSave")?.addEventListener("click", () => {
+    // If the user filled "New Theme" fields, create it; otherwise save label for selected custom
+    const created = createNewThemeIfRequested();
+    if (!created) persistEditorThemeLabel();
+  });
+
+  // -----------------------
+  // Collapsible Custom Theme Editor
+  // -----------------------
+  const THEME_EDITOR_COLLAPSED_KEY = "ace_theme_editor_collapsed_v1";
+
+  function setThemeEditorCollapsed(collapsed){
+    const body = $("#themeEditorBody");
+    const header = $("#themeEditorHeader");
+    if (!body) return;
+    body.style.display = collapsed ? "none" : "";
+    if (header){
+      header.setAttribute("aria-expanded", collapsed ? "false" : "true");
+      header.classList.toggle("collapsed", !!collapsed);
+    }
+    try{ localStorage.setItem(THEME_EDITOR_COLLAPSED_KEY, collapsed ? "1" : "0"); }catch(e){}
+  }
+
+  function toggleThemeEditor(){
+    const body = $("#themeEditorBody");
+    const isCollapsed = body && body.style.display === "none";
+    setThemeEditorCollapsed(!isCollapsed);
+  }
+
+  // Click the header to expand/collapse (ignore clicks on buttons)
+  $("#themeEditorHeader")?.addEventListener("click", (e) => {
+    if (e.target && e.target.closest && e.target.closest("button")) return;
+    toggleThemeEditor();
+  });
+  $("#themeEditorHeader")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      toggleThemeEditor();
+    }
+  });
+
+
+  // Apply saved state on load
+  try{
+    const saved = localStorage.getItem(THEME_EDITOR_COLLAPSED_KEY) === "1";
+    setThemeEditorCollapsed(saved);
+  }catch(e){}
+
   refreshTone();
   setMode("quick");
   loadLog();
