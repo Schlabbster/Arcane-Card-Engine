@@ -848,11 +848,11 @@
               </div>
               <div class="row" style="margin-bottom:10px">
                 <label for="newThemeKey">New</label>
-                <input id="newThemeKey" type="text" placeholder="key (e.g., dark_fae) — optional" />
+                <input id="newThemeKey" type="text" placeholder="key (e.g., dark_fae) - optional" />
               </div>
               <div class="row" style="margin-bottom:0">
                 <label for="newThemeLabel">Label</label>
-                <input id="newThemeLabel" type="text" placeholder="display name (e.g., Dark Fae Court) — optional" />
+                <input id="newThemeLabel" type="text" placeholder="display name (e.g., Dark Fae Court) - optional" />
               </div>
             </div>
 
@@ -870,7 +870,7 @@
                   <option value="discoveries">discoveries</option>
                 </select>
               </div>
-              <textarea id="editThemeEntry" placeholder="Add one or more entries — one per line"></textarea>
+              <textarea id="editThemeEntry" placeholder="Add one or more entries - one per line"></textarea>
               <div class="mini" style="margin-top:10px; justify-content:flex-end">
                 <button class="miniBtn" id="btnAddEntry">Add</button>
                 <button class="miniBtn danger" id="btnDeleteTheme" title="Deletes the selected custom theme (built-in themes cannot be deleted)">Delete Theme</button>
@@ -981,7 +981,7 @@
       <header>
         <h2>Encounter Tarot</h2>
         <div class="sub">Draw shows Major + Minor (Spread shows 3 Majors + Minor)</div>
-        <div class="alphaBadge" title="Work in Progress — features may change"><span class="dot"></span>Alpha</div>
+        <div class="alphaBadge" title="Work in Progress - features may change"><span class="dot"></span>Alpha</div>
       </header>
 
       <div class="cardWrap" id="cardWrap">
@@ -996,7 +996,7 @@
           <div class="cardSlot" id="slotMajor">
             <div class="slotLabel">
               <span class="pillTag">MAJOR</span>
-              <span class="pillTag" id="slotMajorName">—</span>
+              <span class="pillTag" id="slotMajorName">-</span>
             </div>
             <div class="card3d" id="cardMajor" title="Click to draw">
               <div class="inner" id="innerMajor">
@@ -1010,7 +1010,7 @@
           <div class="cardSlot" id="slotMinor">
             <div class="slotLabel">
               <span class="pillTag">MINOR</span>
-              <span class="pillTag" id="slotMinorName">—</span>
+              <span class="pillTag" id="slotMinorName">-</span>
             </div>
             <div class="card3d" id="cardMinor" title="Click to draw">
               <div class="inner" id="innerMinor">
@@ -1024,7 +1024,7 @@
           <div class="cardSlot" id="slotPast" style="display:none">
             <div class="slotLabel">
               <span class="pillTag">PAST</span>
-              <span class="pillTag" id="slotPastName">—</span>
+              <span class="pillTag" id="slotPastName">-</span>
             </div>
             <div class="card3d" id="cardPast" title="Click to draw">
               <div class="inner" id="innerPast">
@@ -1037,7 +1037,7 @@
           <div class="cardSlot" id="slotPresent" style="display:none">
             <div class="slotLabel">
               <span class="pillTag">PRESENT</span>
-              <span class="pillTag" id="slotPresentName">—</span>
+              <span class="pillTag" id="slotPresentName">-</span>
             </div>
             <div class="card3d" id="cardPresent" title="Click to draw">
               <div class="inner" id="innerPresent">
@@ -1050,7 +1050,7 @@
           <div class="cardSlot" id="slotThreat" style="display:none">
             <div class="slotLabel">
               <span class="pillTag">THREAT</span>
-              <span class="pillTag" id="slotThreatName">—</span>
+              <span class="pillTag" id="slotThreatName">-</span>
             </div>
             <div class="card3d" id="cardThreat" title="Click to draw">
               <div class="inner" id="innerThreat">
@@ -1063,7 +1063,7 @@
           <div class="cardSlot" id="slotDriver" style="display:none">
             <div class="slotLabel">
               <span class="pillTag">DRIVER</span>
-              <span class="pillTag" id="slotDriverName">—</span>
+              <span class="pillTag" id="slotDriverName">-</span>
             </div>
             <div class="card3d" id="cardDriver" title="Click to draw">
               <div class="inner" id="innerDriver">
@@ -2901,7 +2901,7 @@ Use Escalate to add a complication when players pivot.
     }else{
       const opt = document.createElement("option");
       opt.value = "";
-      opt.textContent = "— none yet —";
+      opt.textContent = "- none yet -";
       opt.disabled = true;
       grpCustom.appendChild(opt);
     }
@@ -3105,66 +3105,66 @@ Use Escalate to add a complication when players pivot.
   // Hybrid majors (encounter-forward, faster prompts)
   const hybridMajors = [
     { id:"broken_oath", name:"The Broken Oath", axis:"betrayal / alliance fracture", hook:"A vow has been violated. Someone wants the fallout to spread.", revAxis:"forced reconciliation / coerced loyalty", revHook:"A ‘peace’ is demanded. The cost is silence." },
-    { id:"the_crown", name:"The Crown", axis:"power struggle", hook:"Authority is contested. The ‘rightful’ claim is dangerous.", revAxis:"hollow authority / puppet rule", revHook:"The crown is real—its wearer isn’t." },
+    { id:"the_crown", name:"The Crown", axis:"power struggle", hook:"Authority is contested. The ‘rightful’ claim is dangerous.", revAxis:"hollow authority / puppet rule", revHook:"The crown is real-its wearer isn’t." },
     { id:"the_beast", name:"The Beast", axis:"uncontrolled threat", hook:"A threat is loose. The first story told about it is wrong.", revAxis:"contained rage / baited trap", revHook:"The beast is penned… and someone wants you inside the pen." },
-    { id:"the_veil", name:"The Veil", axis:"hidden truth", hook:"Something is concealed. Pull the thread and more unravels.", revAxis:"misdirection / false clarity", revHook:"Someone ‘reveals’ the truth—so you stop asking questions." },
+    { id:"the_veil", name:"The Veil", axis:"hidden truth", hook:"Something is concealed. Pull the thread and more unravels.", revAxis:"misdirection / false clarity", revHook:"Someone ‘reveals’ the truth-so you stop asking questions." },
     { id:"ashen_banner", name:"The Ashen Banner", axis:"war / unrest", hook:"Conflict is rising. Every choice picks a side.", revAxis:"cold ceasefire / powder keg", revHook:"Peace is signed. The knives are already out." },
     { id:"drowned_king", name:"The Drowned King", axis:"forgotten ruler / legacy", hook:"An old claim resurfaces. The past wants its due.", revAxis:"buried history / denied inheritance", revHook:"Someone destroyed the records. The truth survived anyway." },
-    { id:"the_merchant", name:"The Merchant", axis:"greed / trade", hook:"Profit drives the crisis. Someone is cornered—and desperate.", revAxis:"debt bondage / predatory charity", revHook:"Help is offered—tied to an invisible chain." },
-    { id:"hollow_city", name:"The Hollow City", axis:"ruins / decay", hook:"A place is dying—or already dead. Something still moves inside it.", revAxis:"gentrified rot / pretty lie", revHook:"The city looks restored. The rot is simply hidden." },
-    { id:"red_harvest", name:"The Red Harvest", axis:"famine / plague", hook:"Resources fail. People do terrible things to survive.", revAxis:"hoarded abundance / manufactured scarcity", revHook:"There is enough—someone made it ‘not enough’." },
+    { id:"the_merchant", name:"The Merchant", axis:"greed / trade", hook:"Profit drives the crisis. Someone is cornered-and desperate.", revAxis:"debt bondage / predatory charity", revHook:"Help is offered-tied to an invisible chain." },
+    { id:"hollow_city", name:"The Hollow City", axis:"ruins / decay", hook:"A place is dying-or already dead. Something still moves inside it.", revAxis:"gentrified rot / pretty lie", revHook:"The city looks restored. The rot is simply hidden." },
+    { id:"red_harvest", name:"The Red Harvest", axis:"famine / plague", hook:"Resources fail. People do terrible things to survive.", revAxis:"hoarded abundance / manufactured scarcity", revHook:"There is enough-someone made it ‘not enough’." },
     { id:"black_star", name:"The Black Star", axis:"omen / catastrophe", hook:"A bad sign becomes real. Time is against you.", revAxis:"false prophecy / engineered panic", revHook:"The omen is staged. The stampede is the weapon." },
-    { id:"iron_chain", name:"The Iron Chain", axis:"oppression", hook:"Control tightens. Someone needs help—quietly, fast.", revAxis:"rebellion crushed / resistance compromised", revHook:"The resistance has a leak. It might be you." },
+    { id:"iron_chain", name:"The Iron Chain", axis:"oppression", hook:"Control tightens. Someone needs help-quietly, fast.", revAxis:"rebellion crushed / resistance compromised", revHook:"The resistance has a leak. It might be you." },
     { id:"shattered_seal", name:"The Shattered Seal", axis:"instability / breach", hook:"A boundary broke. What spills through changes the rules.", revAxis:"patchwork barrier / brittle fix", revHook:"The seal is ‘repaired.’ One hard push will shatter it again." },
   ];
 
   // Classic tarot majors (22) adapted into encounter prompts
   const classicMajors = [
-    { id:"fool", name:"0 — The Fool", axis:"leap of faith / fresh start", hook:"Someone takes a risk that pulls you in.", revAxis:"recklessness / ignorance", revHook:"The leap wasn’t brave—it was careless." },
-    { id:"magician", name:"I — The Magician", axis:"power used with intent", hook:"A tool, talent, or spell changes the situation.", revAxis:"trickery / misdirection", revHook:"The ‘miracle’ is a con—or a trap." },
-    { id:"high_priestess", name:"II — The High Priestess", axis:"secrets / intuition", hook:"A hidden truth waits behind polite silence.", revAxis:"withheld knowledge / paranoia", revHook:"Clues are buried. Trust becomes costly." },
-    { id:"empress", name:"III — The Empress", axis:"growth / abundance", hook:"Prosperity attracts attention—good and bad.", revAxis:"smothering control / scarcity fears", revHook:"Care becomes possession. Plenty becomes leverage." },
-    { id:"emperor", name:"IV — The Emperor", axis:"order / authority", hook:"Rules tighten—officially or unofficially.", revAxis:"tyranny / brittle regime", revHook:"Authority overreaches and cracks." },
-    { id:"hierophant", name:"V — The Hierophant", axis:"tradition / doctrine", hook:"A rite, law, or faith must be obeyed—or broken.", revAxis:"heresy / corruption", revHook:"The institution is rotten, and it knows you see it." },
-    { id:"lovers", name:"VI — The Lovers", axis:"bond / choice", hook:"A relationship forces a defining decision.", revAxis:"temptation / fracture", revHook:"The bond becomes a wedge." },
-    { id:"chariot", name:"VII — The Chariot", axis:"momentum / conquest", hook:"Someone pushes forward; stopping them has a cost.", revAxis:"loss of control / stalled advance", revHook:"The charge falters—dangerously." },
-    { id:"strength", name:"VIII — Strength", axis:"courage / restraint", hook:"Mercy and resolve are tested in public.", revAxis:"cruelty / fear", revHook:"Strength is mistaken for violence." },
-    { id:"hermit", name:"IX — The Hermit", axis:"isolation / seeking", hook:"A crucial answer is hidden away with a reluctant keeper.", revAxis:"secrecy / withdrawal", revHook:"The keeper won’t speak—unless forced." },
-    { id:"wheel", name:"X — Wheel of Fortune", axis:"turning tides / luck", hook:"A reversal of fortune reshapes alliances.", revAxis:"bad timing / rigged game", revHook:"The wheel is fixed. Someone chose the outcome." },
-    { id:"justice", name:"XI — Justice", axis:"law / consequence", hook:"A judgment must be made—and witnessed.", revAxis:"bias / injustice", revHook:"The verdict is decided before the hearing." },
-    { id:"hanged_man", name:"XII — The Hanged Man", axis:"sacrifice / new view", hook:"Progress requires giving something up.", revAxis:"martyrdom / stubbornness", revHook:"Someone clings to suffering to avoid change." },
-    { id:"death", name:"XIII — Death", axis:"ending / transformation", hook:"A chapter closes—by choice or by force.", revAxis:"refusal to change / lingering ruin", revHook:"The old won’t die. It becomes a problem." },
-    { id:"temperance", name:"XIV — Temperance", axis:"balance / synthesis", hook:"Two sides can be reconciled—if someone mediates.", revAxis:"imbalance / excess", revHook:"A compromise turns poisonous." },
-    { id:"devil", name:"XV — The Devil", axis:"bondage / vice", hook:"A deal, addiction, or fear holds someone hostage.", revAxis:"breaking chains / exposure", revHook:"The chain can snap—if you pull now." },
-    { id:"tower", name:"XVI — The Tower", axis:"sudden collapse", hook:"A structure—physical or political—falls fast.", revAxis:"averted disaster / delayed ruin", revHook:"The collapse is postponed, not prevented." },
-    { id:"star", name:"XVII — The Star", axis:"hope / guidance", hook:"A sign offers a path through chaos.", revAxis:"false hope / burnout", revHook:"The sign misleads—or you’re too tired to follow it." },
-    { id:"moon", name:"XVIII — The Moon", axis:"illusion / fear", hook:"Nothing is as it seems. Follow the wrong shadow and you’re lost.", revAxis:"clarity / truth surfacing", revHook:"The fog thins—revealing something worse." },
-    { id:"sun", name:"XIX — The Sun", axis:"success / revelation", hook:"Truth comes into the open, changing everything.", revAxis:"overexposure / hubris", revHook:"The spotlight burns." },
-    { id:"judgement", name:"XX — Judgement", axis:"reckoning / return", hook:"The past calls in a debt—publicly.", revAxis:"avoidance / denial", revHook:"The reckoning is coming. Someone tries to hide." },
-    { id:"world", name:"XXI — The World", axis:"completion / new horizon", hook:"A cycle ends; a gate opens to the next.", revAxis:"unfinished business / loose ends", revHook:"You can’t leave until you settle what’s behind you." },
+    { id:"fool", name:"0 - The Fool", axis:"leap of faith / fresh start", hook:"Someone takes a risk that pulls you in.", revAxis:"recklessness / ignorance", revHook:"The leap wasn’t brave-it was careless." },
+    { id:"magician", name:"I - The Magician", axis:"power used with intent", hook:"A tool, talent, or spell changes the situation.", revAxis:"trickery / misdirection", revHook:"The ‘miracle’ is a con-or a trap." },
+    { id:"high_priestess", name:"II - The High Priestess", axis:"secrets / intuition", hook:"A hidden truth waits behind polite silence.", revAxis:"withheld knowledge / paranoia", revHook:"Clues are buried. Trust becomes costly." },
+    { id:"empress", name:"III - The Empress", axis:"growth / abundance", hook:"Prosperity attracts attention-good and bad.", revAxis:"smothering control / scarcity fears", revHook:"Care becomes possession. Plenty becomes leverage." },
+    { id:"emperor", name:"IV - The Emperor", axis:"order / authority", hook:"Rules tighten-officially or unofficially.", revAxis:"tyranny / brittle regime", revHook:"Authority overreaches and cracks." },
+    { id:"hierophant", name:"V - The Hierophant", axis:"tradition / doctrine", hook:"A rite, law, or faith must be obeyed-or broken.", revAxis:"heresy / corruption", revHook:"The institution is rotten, and it knows you see it." },
+    { id:"lovers", name:"VI - The Lovers", axis:"bond / choice", hook:"A relationship forces a defining decision.", revAxis:"temptation / fracture", revHook:"The bond becomes a wedge." },
+    { id:"chariot", name:"VII - The Chariot", axis:"momentum / conquest", hook:"Someone pushes forward; stopping them has a cost.", revAxis:"loss of control / stalled advance", revHook:"The charge falters-dangerously." },
+    { id:"strength", name:"VIII - Strength", axis:"courage / restraint", hook:"Mercy and resolve are tested in public.", revAxis:"cruelty / fear", revHook:"Strength is mistaken for violence." },
+    { id:"hermit", name:"IX - The Hermit", axis:"isolation / seeking", hook:"A crucial answer is hidden away with a reluctant keeper.", revAxis:"secrecy / withdrawal", revHook:"The keeper won’t speak-unless forced." },
+    { id:"wheel", name:"X - Wheel of Fortune", axis:"turning tides / luck", hook:"A reversal of fortune reshapes alliances.", revAxis:"bad timing / rigged game", revHook:"The wheel is fixed. Someone chose the outcome." },
+    { id:"justice", name:"XI - Justice", axis:"law / consequence", hook:"A judgment must be made-and witnessed.", revAxis:"bias / injustice", revHook:"The verdict is decided before the hearing." },
+    { id:"hanged_man", name:"XII - The Hanged Man", axis:"sacrifice / new view", hook:"Progress requires giving something up.", revAxis:"martyrdom / stubbornness", revHook:"Someone clings to suffering to avoid change." },
+    { id:"death", name:"XIII - Death", axis:"ending / transformation", hook:"A chapter closes-by choice or by force.", revAxis:"refusal to change / lingering ruin", revHook:"The old won’t die. It becomes a problem." },
+    { id:"temperance", name:"XIV - Temperance", axis:"balance / synthesis", hook:"Two sides can be reconciled-if someone mediates.", revAxis:"imbalance / excess", revHook:"A compromise turns poisonous." },
+    { id:"devil", name:"XV - The Devil", axis:"bondage / vice", hook:"A deal, addiction, or fear holds someone hostage.", revAxis:"breaking chains / exposure", revHook:"The chain can snap-if you pull now." },
+    { id:"tower", name:"XVI - The Tower", axis:"sudden collapse", hook:"A structure-physical or political-falls fast.", revAxis:"averted disaster / delayed ruin", revHook:"The collapse is postponed, not prevented." },
+    { id:"star", name:"XVII - The Star", axis:"hope / guidance", hook:"A sign offers a path through chaos.", revAxis:"false hope / burnout", revHook:"The sign misleads-or you’re too tired to follow it." },
+    { id:"moon", name:"XVIII - The Moon", axis:"illusion / fear", hook:"Nothing is as it seems. Follow the wrong shadow and you’re lost.", revAxis:"clarity / truth surfacing", revHook:"The fog thins-revealing something worse." },
+    { id:"sun", name:"XIX - The Sun", axis:"success / revelation", hook:"Truth comes into the open, changing everything.", revAxis:"overexposure / hubris", revHook:"The spotlight burns." },
+    { id:"judgement", name:"XX - Judgement", axis:"reckoning / return", hook:"The past calls in a debt-publicly.", revAxis:"avoidance / denial", revHook:"The reckoning is coming. Someone tries to hide." },
+    { id:"world", name:"XXI - The World", axis:"completion / new horizon", hook:"A cycle ends; a gate opens to the next.", revAxis:"unfinished business / loose ends", revHook:"You can’t leave until you settle what’s behind you." },
   ];
 
   // Minor "drivers" (event cards)
   const driverMinors = [
     { id:"ambush", name:"Ambush", pressure:"sudden violence", prompt:"Someone strikes first to control the narrative.", revPressure:"a feigned attack", revPrompt:"Violence is staged to justify a crackdown." },
-    { id:"disappearance", name:"Disappearance", pressure:"missing person / thing", prompt:"Someone vanished—and the reason matters more than where.", revPressure:"a forced return", revPrompt:"The missing reappears with a story that doesn’t fit." },
+    { id:"disappearance", name:"Disappearance", pressure:"missing person / thing", prompt:"Someone vanished-and the reason matters more than where.", revPressure:"a forced return", revPrompt:"The missing reappears with a story that doesn’t fit." },
     { id:"border_crossing", name:"Border Crossing", pressure:"jurisdiction / tension", prompt:"Crossing a line triggers rules, fear, or force.", revPressure:"smuggled authority", revPrompt:"Someone brings ‘law’ where it doesn’t belong." },
-    { id:"festival", name:"Festival", pressure:"crowds / cover", prompt:"Joy is a mask. Trouble hides in plain sight.", revPressure:"panic in the crowd", revPrompt:"Celebration flips to stampede—who benefits?" },
-    { id:"assassination", name:"Assassination", pressure:"targeted killing", prompt:"A life is threatened. Saving them changes politics.", revPressure:"a protected target", revPrompt:"The target is bait—meant to lure protectors in." },
+    { id:"festival", name:"Festival", pressure:"crowds / cover", prompt:"Joy is a mask. Trouble hides in plain sight.", revPressure:"panic in the crowd", revPrompt:"Celebration flips to stampede-who benefits?" },
+    { id:"assassination", name:"Assassination", pressure:"targeted killing", prompt:"A life is threatened. Saving them changes politics.", revPressure:"a protected target", revPrompt:"The target is bait-meant to lure protectors in." },
     { id:"siege", name:"Siege", pressure:"time + scarcity", prompt:"Supplies dwindle. Something must break.", revPressure:"a fake siege", revPrompt:"The ‘blockade’ is a cover for quiet extraction." },
     { id:"duel", name:"Duel", pressure:"honor + spectacle", prompt:"A challenge forces a public commitment.", revPressure:"dishonorable rules", revPrompt:"The duel’s terms are rigged to humiliate." },
-    { id:"sabotage", name:"Sabotage", pressure:"systems fail", prompt:"Someone wants the machine to stop—today.", revPressure:"silent maintenance", revPrompt:"A ‘fix’ is performed that actually plants a flaw." },
+    { id:"sabotage", name:"Sabotage", pressure:"systems fail", prompt:"Someone wants the machine to stop-today.", revPressure:"silent maintenance", revPrompt:"A ‘fix’ is performed that actually plants a flaw." },
     { id:"smuggling", name:"Smuggling", pressure:"hidden cargo", prompt:"Contraband moves. Interfere and you earn enemies.", revPressure:"false contraband", revPrompt:"The ‘illegal’ cargo is a decoy for something worse." },
     { id:"inheritance", name:"Inheritance", pressure:"claim + legitimacy", prompt:"A claim changes hands. The paperwork is weaponized.", revPressure:"disputed lineage", revPrompt:"A ‘heir’ appears with perfect documents." },
     { id:"ritual", name:"Ritual", pressure:"countdown", prompt:"A process is underway. Interrupting it has consequences.", revPressure:"ritual backlash", revPrompt:"Stopping it triggers a dangerous rebound." },
-    { id:"missing_caravan", name:"Missing Caravan", pressure:"lost route", prompt:"Something vanished along a known path. The gap is suspicious.", revPressure:"found—too late", revPrompt:"The caravan returns… wrong." },
+    { id:"missing_caravan", name:"Missing Caravan", pressure:"lost route", prompt:"Something vanished along a known path. The gap is suspicious.", revPressure:"found-too late", revPrompt:"The caravan returns… wrong." },
     { id:"prisoner_exchange", name:"Prisoner Exchange", pressure:"fragile truce", prompt:"A trade must happen. If it fails, war follows.", revPressure:"double-cross", revPrompt:"The exchange is an ambush in formal clothes." },
-    { id:"broken_treaty", name:"Broken Treaty", pressure:"legal breach", prompt:"A pact is disputed. Proof is worth more than blades.", revPressure:"forged compliance", revPrompt:"A ‘signed’ treaty is produced—everyone swears it’s fake." },
-    { id:"storm", name:"Storm", pressure:"environmental threat", prompt:"Nature turns hostile. Choices become smaller and sharper.", revPressure:"calm before it hits", revPrompt:"The storm pauses—so something else can move." },
+    { id:"broken_treaty", name:"Broken Treaty", pressure:"legal breach", prompt:"A pact is disputed. Proof is worth more than blades.", revPressure:"forged compliance", revPrompt:"A ‘signed’ treaty is produced-everyone swears it’s fake." },
+    { id:"storm", name:"Storm", pressure:"environmental threat", prompt:"Nature turns hostile. Choices become smaller and sharper.", revPressure:"calm before it hits", revPrompt:"The storm pauses-so something else can move." },
     { id:"refugees", name:"Refugees", pressure:"human cost", prompt:"People flee. Someone exploits the chaos.", revPressure:"false refugees", revPrompt:"A column hides infiltrators (or contraband)." },
   ];
 
-  // Tarot suit minors (56) — generated with strong suit/rank prompts
+  // Tarot suit minors (56) - generated with strong suit/rank prompts
   function buildSuitMinors(){
     const suits = [
       { key:"wands", label:"Wands", basePressure:"ambition / initiative", suitPrompt:["a bold plan", "a risky venture", "a charismatic leader", "a spark that spreads"] },
@@ -3274,14 +3274,14 @@ Use Escalate to add a complication when players pivot.
     ],
     escalationBeats: [
       "A second incident hits elsewhere, splitting attention.",
-      "The antagonist offers a deal that would ‘solve’ things—at a cost.",
+      "The antagonist offers a deal that would ‘solve’ things-at a cost.",
       "A public announcement reframes the party as the problem.",
       "A key witness disappears mid-scene.",
       "A hidden faction makes a move and demands immediate response.",
       "The ‘solution’ triggers a larger threat (ripple effect).",
       "Authorities impose a deadline or lockdown.",
       "A betrayal occurs within an allied group.",
-      "The villain reveals they expected this—and prepared.",
+      "The villain reveals they expected this-and prepared.",
       "A ‘helpful’ authority figure demands control of the outcome."
     ],
     hooks: [
@@ -3515,7 +3515,7 @@ Theme: ${escapeHTML(summary.theme.toUpperCase())} · Tier: ${escapeHTML(summary.
 
   function formatAllText(summary){
     const lines = [];
-    lines.push(`ENCOUNTER TAROT — ${summary.generatedAt}`);
+    lines.push(`ENCOUNTER TAROT - ${summary.generatedAt}`);
     lines.push(`Major: ${summary.major}${summary.majorReversed ? ' (Reversed)' : ''}`);
     lines.push(`Minor: ${summary.minor}${summary.minorReversed ? ' (Reversed)' : ''}`);
     lines.push(`Theme: ${summary.theme} | Tier: ${summary.tier} | Tone: ${summary.tone}`);
@@ -3579,7 +3579,7 @@ Theme: ${escapeHTML(summary.theme.toUpperCase())} · Tier: ${escapeHTML(summary.
           <div class="tag tight">${escapeHTML(themeUp)} · ${escapeHTML(tierUp)} · ${escapeHTML(toneUp)}</div>
         </div>
 
-        <h1 class="cardTitle">${escapeHTML(title || "—")}</h1>
+        <h1 class="cardTitle">${escapeHTML(title || "-")}</h1>
         <p class="cardSub">${escapeHTML(subtitle || "")}</p>
         <p class="cardHook">${escapeHTML(hook || "")}</p>
 
@@ -3817,7 +3817,7 @@ Theme: ${escapeHTML(summary.theme.toUpperCase())} · Tier: ${escapeHTML(summary.
       const div = document.createElement("div");
       div.className = "logItem";
       div.innerHTML = `
-        <div class="t">${escapeHTML(item.major)} — ${escapeHTML(item.minor)}</div>
+        <div class="t">${escapeHTML(item.major)} - ${escapeHTML(item.minor)}</div>
         <div class="m">${escapeHTML(item.generatedAt)} · ${escapeHTML(item.theme.toUpperCase())} · ${escapeHTML(item.tone)}</div>
         <div class="a">${escapeHTML(item.core.location)}</div>
         <div class="miniBtns" style="margin-top:8px">
@@ -3917,8 +3917,8 @@ Theme: ${escapeHTML(summary.theme.toUpperCase())} · Tier: ${escapeHTML(summary.
   }
 
   function fillMajorMinorCards(majorCard, minorCard, theme, tier, toneLabel, immediateHook){
-    const majorName = majorCard?.name || "—";
-    const minorName = minorCard?.name || "—";
+    const majorName = majorCard?.name || "-";
+    const minorName = minorCard?.name || "-";
 
     $("#slotMajorName").textContent = majorName + (majorCard?.reversed ? " ⟲" : "");
     $("#slotMinorName").textContent = minorName + (minorCard?.reversed ? " ⟲" : "");
