@@ -696,6 +696,113 @@
     /* Make long labels / pills never overflow */
     .sub{max-width: 100%; overflow:hidden; text-overflow:ellipsis;}
 
+  
+    /* Alpha notice badge */
+    .alphaBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(255,211,124,.45);
+      background: rgba(255,211,124,.08);
+      color: rgba(255,211,124,.95);
+      font-weight:900;
+      font-size:11px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .alphaBadge .dot{
+      width:7px;height:7px;border-radius:999px;
+      background: rgba(255,211,124,.85);
+      box-shadow: 0 0 14px rgba(255,211,124,.25);
+      flex:0 0 auto;
+    }
+
+    /* First-visit Alpha modal */
+    .alphaModalWrap{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:1000;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(6px);
+    }
+    .alphaModalWrap.show{display:flex;}
+    .alphaModal{
+      width: min(720px, 100%);
+      border-radius: 22px;
+      border:1px solid rgba(59,74,160,.45);
+      background: linear-gradient(180deg, rgba(15,22,48,.96), rgba(7,8,19,.92));
+      box-shadow: 0 24px 70px rgba(0,0,0,.55);
+      overflow:hidden;
+    }
+    .alphaModal header{
+      padding:16px 16px 12px;
+      border-bottom:1px solid rgba(59,74,160,.26);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .alphaModal header h3{
+      margin:0;
+      font-size:12px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color:rgba(233,236,255,.92);
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .alphaModal header .x{
+      border-radius: 14px;
+      padding:8px 10px;
+      border:1px solid rgba(59,74,160,.35);
+      background: rgba(7,8,19,.35);
+      color: var(--text);
+      cursor:pointer;
+      font-weight:900;
+      font-size:12px;
+    }
+    .alphaModal .body{
+      padding:16px;
+      color: rgba(233,236,255,.92);
+      line-height:1.5;
+      font-size:13px;
+    }
+    .alphaModal .body p{margin:0 0 10px;}
+    .alphaModal .body ul{
+      margin:10px 0 0 18px;
+      padding:0;
+      color: rgba(170,178,229,.95);
+    }
+    .alphaModal .actions{
+      padding:14px 16px 16px;
+      border-top:1px solid rgba(59,74,160,.26);
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+      background: rgba(7,8,19,.20);
+    }
+    .alphaModal .actions .btn{
+      padding:10px 12px;
+    }
+    .alphaModal .actions a{
+      color: var(--muted);
+      font-weight:800;
+      text-decoration:none;
+      border-bottom:1px solid rgba(124,246,255,.0);
+    }
+    .alphaModal .actions a:hover{
+      border-bottom-color: rgba(124,246,255,.55);
+    }
+
   </style>
 </head>
 <body>
@@ -858,7 +965,7 @@
       </div>
 
             <footer class="leftFooter">
-        <div class="leftFooterTitle">Feedback &amp; Support</div>
+        <div class="leftFooterTitle">Feedback &amp; Support <span style="opacity:.75">· Alpha / WIP</span></div>
         <div class="leftFooterLinks">
           <a href="https://schlabbster.github.io/Schlabbies-Arcane-Arena/" target="_blank" rel="noopener">Schlabbie’s Arcane Arena (Project Hub)</a>
           <span class="sep">·</span>
@@ -874,6 +981,7 @@
       <header>
         <h2>Encounter Tarot</h2>
         <div class="sub">Draw shows Major + Minor (Spread shows 3 Majors + Minor)</div>
+        <div class="alphaBadge" title="Work in Progress — features may change"><span class="dot"></span>Alpha</div>
       </header>
 
       <div class="cardWrap" id="cardWrap">
@@ -993,6 +1101,31 @@ Use Escalate to add a complication when players pivot.
       </div>
     </section>
   </div>
+
+  
+  <!-- Alpha notice (first visit) -->
+  <div class="alphaModalWrap" id="alphaModalWrap" role="dialog" aria-modal="true" aria-labelledby="alphaModalTitle">
+    <div class="alphaModal">
+      <header>
+        <h3 id="alphaModalTitle"><span class="alphaBadge" style="padding:6px 10px;"><span class="dot"></span>Alpha Build</span> Work in progress</h3>
+        <button class="x" id="alphaModalClose" aria-label="Close">✕</button>
+      </header>
+      <div class="body">
+        <p><b>Heads up:</b> this generator is currently in an <b>alpha</b> state.</p>
+        <p>That means you may run into bugs, unfinished features, or UI changes as the tool evolves.</p>
+        <ul>
+          <li>If something breaks, refresh the page and try again.</li>
+          <li>Ideas & bug reports are welcome via the “Report bugs / suggest features” link.</li>
+          <li>Saved data (themes / log) is stored locally in your browser.</li>
+        </ul>
+      </div>
+      <div class="actions">
+        <a href="https://github.com/Schlabbster/Arcane-Card-Engine/issues" target="_blank" rel="noopener">Report an issue</a>
+        <button class="btn primary" id="alphaModalAcknowledge">Got it</button>
+      </div>
+    </div>
+  </div>
+
 
   <div class="toast" id="toast">Copied</div>
 
@@ -4107,6 +4240,48 @@ if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c"){
     const saved = localStorage.getItem(THEME_EDITOR_COLLAPSED_KEY) === "1";
     setThemeEditorCollapsed(saved);
   }catch(e){}
+
+
+  // -----------------------
+  // Alpha Notice (first visit)
+  // -----------------------
+  const ALPHA_ACK_KEY = "ace_alpha_ack_v1";
+  const alphaWrap = $("#alphaModalWrap");
+  const alphaClose = $("#alphaModalClose");
+  const alphaAck = $("#alphaModalAcknowledge");
+
+  function openAlpha(){
+    if (!alphaWrap) return;
+    alphaWrap.classList.add("show");
+    setTimeout(() => alphaAck?.focus(), 0);
+  }
+  function closeAlpha(persist=true){
+    if (!alphaWrap) return;
+    alphaWrap.classList.remove("show");
+    if (persist){
+      try{ localStorage.setItem(ALPHA_ACK_KEY, "1"); }catch(e){}
+    }
+  }
+
+  try{
+    const seen = localStorage.getItem(ALPHA_ACK_KEY) === "1";
+    if (!seen) openAlpha();
+  }catch(e){
+    openAlpha();
+  }
+
+  alphaClose?.addEventListener("click", () => closeAlpha(true));
+  alphaAck?.addEventListener("click", () => closeAlpha(true));
+  alphaWrap?.addEventListener("click", (e) => {
+    if (e.target === alphaWrap) closeAlpha(true);
+  });
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && alphaWrap?.classList.contains("show")){
+      closeAlpha(true);
+    }
+  });
+
 
   refreshTone();
   setMode("quick");
